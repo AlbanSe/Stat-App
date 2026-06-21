@@ -3,930 +3,221 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StatLearn Pro (Offline-Edition)</title>
+<title>StatLearn Pro | Ultimate ISLP Edition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0B0D17;--bg2:#12152A;--bg3:#1A1F38;--bg4:#222847;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
-  --text:#E8EBF8;--text2:#8B91B5;--text3:#555A7A;
-  --purple:#7C6FED;--purple-l:#A89AF5;--purple-d:#3D3580;
-  --green:#36D399;--green-l:#6EE7B7;--green-d:#0D5C3F;
-  --amber:#FBBF24;--amber-l:#FDE68A;--amber-d:#78350F;
-  --red:#F87171;--red-d:#7F1D1D;
-  --blue:#60A5FA;--pink:#F472B6;--teal:#2DD4BF;
-  --r:12px;--rs:8px;
+:root {
+  --bg-base: #0f111a; --bg-glass: rgba(26, 29, 45, 0.65); --bg-glass-hover: rgba(38, 43, 66, 0.8);
+  --panel-border: rgba(255, 255, 255, 0.08); --accent-glow: rgba(99, 102, 241, 0.15);
+  --text-main: #f1f5f9; --text-muted: #94a3b8; --text-dark: #64748b;
+  --primary: #6366f1; --primary-hover: #4f46e5; --primary-light: #818cf8;
+  --success: #10b981; --success-bg: rgba(16, 185, 129, 0.1);
+  --warning: #f59e0b; --warning-bg: rgba(245, 158, 11, 0.1);
+  --danger: #ef4444; --danger-bg: rgba(239, 68, 68, 0.1);
+  --info: #0ea5e9; --radius-lg: 16px; --radius-md: 12px; --radius-sm: 8px;
+  --font-sans: 'Plus Jakarta Sans', sans-serif; --font-mono: 'JetBrains Mono', monospace;
 }
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-button{font-family:'Inter',sans-serif;cursor:pointer}
-input,textarea{font-family:'Inter',sans-serif}
 
-/* NAV */
-.nav{height:56px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.5rem;gap:1rem;position:sticky;top:0;z-index:200}
-.logo{font-weight:800;font-size:18px;background:linear-gradient(135deg,var(--purple-l),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.nav-tabs{display:flex;gap:4px;margin-left:auto}
-.nav-tab{padding:6px 14px;border-radius:20px;border:none;background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px}
-.nav-tab:hover{background:var(--bg3);color:var(--text)}
-.nav-tab.active{background:var(--purple);color:#fff}
-.streak-badge{display:flex;align-items:center;gap:5px;background:var(--amber-d);border:1px solid var(--amber);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--amber-l)}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background-color: var(--bg-base); color: var(--text-main); line-height: 1.6; min-height: 100vh; overflow-x: hidden; background-image: radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08), transparent 25%), radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.05), transparent 25%); background-attachment: fixed; }
+button { font-family: inherit; cursor: pointer; border: none; outline: none; background: transparent; }
 
-/* LAYOUT */
-.layout{display:flex;min-height:calc(100vh - 56px)}
-.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);padding:1.25rem 0.75rem;flex-shrink:0;overflow-y:auto}
-.main-area{flex:1;overflow-y:auto;padding:1.5rem}
+/* === TYPOGRAPHY === */
+h1, h2, h3, h4 { font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+p { margin-bottom: 1rem; color: var(--text-muted); }
+strong { color: var(--text-main); font-weight: 600; }
+.math { font-family: var(--font-mono); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: var(--primary-light); }
 
-/* SIDEBAR */
-.sb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:0 8px;margin:1rem 0 6px}
-.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rs);color:var(--text2);font-size:13px;cursor:pointer;transition:.15s;border:none;background:none;width:100%;text-align:left}
-.sb-item:hover{background:var(--bg3);color:var(--text)}
-.sb-item.active{background:rgba(124,111,237,0.2);color:var(--purple-l)}
-.sb-item .prog-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-left:auto}
-.sb-item .prog-dot.done{background:var(--green)}
-.sb-item .prog-dot.partial{background:var(--amber)}
-.sb-item .prog-dot.none{background:var(--border2)}
+/* === LAYOUT & NAVIGATION === */
+.navbar { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(15, 17, 26, 0.8); border-bottom: 1px solid var(--panel-border); padding: 0.75rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.03em; }
+.brand i { color: var(--primary); font-size: 1.5rem; }
+.nav-links { display: flex; gap: 0.5rem; background: rgba(255,255,255,0.03); padding: 0.25rem; border-radius: 100px; border: 1px solid var(--panel-border); }
+.nav-btn { padding: 0.5rem 1.25rem; border-radius: 100px; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem; }
+.nav-btn:hover { color: var(--text-main); }
+.nav-btn.active { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
 
-/* CARDS */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem}
+.app-container { display: flex; min-height: calc(100vh - 65px); }
+.sidebar { width: 280px; background: var(--bg-glass); border-right: 1px solid var(--panel-border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; flex-shrink: 0; }
+.main-content { flex: 1; padding: 2rem 3rem; overflow-y: auto; max-width: 1200px; margin: 0 auto; }
 
-/* DASHBOARD */
-.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.5rem}
-.stat-card{background:var(--bg3);border-radius:var(--r);padding:1.25rem;text-align:center}
-.stat-val{font-size:32px;font-weight:800;line-height:1}
-.stat-lbl{font-size:12px;color:var(--text2);margin-top:6px}
-.hero-banner{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem}
-.hero-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
-.hero-title{font-size:20px;font-weight:700;margin-bottom:4px}
-.hero-sub{font-size:14px;color:var(--text2)}
-.xp-bar-wrap{margin-top:10px}
-.xp-bar-bg{height:8px;background:var(--bg4);border-radius:4px}
-.xp-bar-fill{height:8px;background:linear-gradient(90deg,var(--purple),var(--purple-l));border-radius:4px;transition:.5s}
-.xp-label{font-size:11px;color:var(--text3);margin-top:4px}
+/* === SIDEBAR ITEMS === */
+.topic-btn { padding: 0.875rem 1rem; border-radius: var(--radius-sm); color: var(--text-muted); text-align: left; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s; border: 1px solid transparent; }
+.topic-btn:hover { background: rgba(255,255,255,0.03); border-color: var(--panel-border); color: var(--text-main); }
+.topic-btn.active { background: var(--accent-glow); border-color: rgba(99, 102, 241, 0.3); color: var(--primary-light); }
+.topic-icon { font-size: 1.25rem; }
+.topic-status { margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--panel-border); }
+.topic-status.mastered { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.topic-status.started { background: var(--warning); }
 
-/* TOPICS */
-.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.topic-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
-.topic-card:hover{border-color:var(--purple);transform:translateY(-2px)}
-.topic-card.completed{border-color:var(--green-d)}
-.topic-icon{font-size:22px;margin-bottom:10px}
-.topic-name覆{font-size:13px;font-weight:600;margin-bottom:4px;line-height:1.4}
-.topic-meta{font-size:11px;color:var(--text3)}
-.topic-prog{height:3px;background:var(--bg4);border-radius:2px;margin-top:10px}
-.topic-prog-fill{height:3px;border-radius:2px;background:var(--purple)}
-.topic-prog-fill.done{background:var(--green)}
-.badge-done{position:absolute;top:10px;right:10px;background:var(--green-d);color:var(--green-l);font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px}
+/* === UI COMPONENTS === */
+.glass-panel { background: var(--bg-glass); backdrop-filter: blur(10px); border: 1px solid var(--panel-border); border-radius: var(--radius-lg); padding: 1.5rem; }
+.btn { padding: 0.75rem 1.5rem; border-radius: var(--radius-sm); font-weight: 600; font-size: 0.9rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--panel-border); background: var(--bg-glass); color: var(--text-main); }
+.btn:hover { background: var(--bg-glass-hover); border-color: var(--text-dark); transform: translateY(-1px); }
+.btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+.btn-success { background: var(--success); border-color: var(--success); color: #fff; }
+.badge { padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.badge-purple { background: rgba(99, 102, 241, 0.15); color: var(--primary-light); border: 1px solid rgba(99,102,241,0.3); }
 
-/* QUIZ */
-.q-meta{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-.pill{font-size:11px;font-weight:600;border-radius:20px;padding:3px 10px}
-.pill-purple{background:rgba(124,111,237,.2);color:var(--purple-l)}
-.pill-green{background:rgba(54,211,153,.15);color:var(--green)}
-.pill-amber{background:rgba(251,191,36,.15);color:var(--amber)}
-.pill-red{background:rgba(248,113,113,.15);color:var(--red)}
-.q-text{font-size:17px;line-height:1.65;margin-bottom:1.25rem;font-weight:500}
-.opts{display:flex;flex-direction:column;gap:8px}
-.opt{padding:13px 16px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:14px;cursor:pointer;transition:.15s;text-align:left;line-height:1.5}
-.opt:hover:not(:disabled){border-color:var(--purple);background:rgba(124,111,237,.1)}
-.opt.correct{border-color:var(--green);background:rgba(54,211,153,.12);color:var(--green-l)}
-.opt.wrong{border-color:var(--red);background:rgba(248,113,113,.1);color:var(--red)}
-.opt.show-correct{border-color:var(--green);background:rgba(54,211,153,.07)}
-.opt:disabled{cursor:default}
-.explanation{margin-top:1rem;padding:1rem;border-radius:var(--rs);background:var(--bg3);border-left:3px solid var(--purple);font-size:14px;line-height:1.7;color:var(--text2);display:none}
-.explanation.show{display:block}
+/* === DASHBOARD === */
+.hero { display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; padding: 2rem; background: linear-gradient(145deg, rgba(99,102,241,0.1), transparent); border: 1px solid rgba(99,102,241,0.2); border-radius: var(--radius-lg); }
+.hero-icon { width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, var(--primary), var(--info)); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #fff; box-shadow: 0 10px 25px rgba(99,102,241,0.3); }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { text-align: center; padding: 1.5rem; }
+.stat-value { font-size: 2.5rem; font-weight: 800; font-family: var(--font-mono); margin-bottom: 0.25rem; background: linear-gradient(to right, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-/* TIMER */
-.timer{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--text)}
-.timer.warning{color:var(--amber)}
-.timer.danger{color:var(--red)}
-.progress-ring-wrap{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
-.prog-bar{flex:1;height:6px;background:var(--bg4);border-radius:3px}
-.prog-fill{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--purple),var(--teal));transition:.3s}
+/* === LEARNING AREA === */
+.mode-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--panel-border); padding-bottom: 1rem; overflow-x: auto; }
+.mode-tab { padding: 0.5rem 1rem; border-radius: var(--radius-sm); color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
+.mode-tab.active { background: rgba(255,255,255,0.05); color: var(--text-main); }
+.theory-content { font-size: 1.05rem; line-height: 1.8; color: #cbd5e1; }
+.theory-content h3 { margin: 1.5rem 0 1rem; color: var(--primary-light); font-size: 1.25rem; }
+.theory-content ul { padding-left: 1.5rem; margin-bottom: 1.5rem; }
+.theory-content li { margin-bottom: 0.5rem; }
 
-/* VIZ */
-canvas{max-width:100%;border-radius:var(--rs)}
-.viz-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:1rem}
-.viz-label{font-size:13px;color:var(--text2);min-width:80px}
-.slider-row{display:flex;align-items:center;gap:10px;flex:1}
-input[type=range]{-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bg4);outline:none;flex:1}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--purple);cursor:pointer}
-.val-badge{font-size:13px;font-weight:600;color:var(--purple-l);min-width:40px;text-align:right}
+/* === QUIZ === */
+.quiz-card { padding: 2rem; position: relative; }
+.q-diff { position: absolute; top: 1.5rem; right: 1.5rem; }
+.q-text { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; line-height: 1.5; color: #fff; }
+.opts-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+.opt-btn { padding: 1rem 1.25rem; text-align: left; border: 1px solid var(--panel-border); background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); color: var(--text-main); font-size: 1rem; transition: all 0.2s; }
+.opt-btn:hover:not(:disabled) { background: rgba(255,255,255,0.06); border-color: var(--text-dark); }
+.opt-btn.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+.opt-btn.wrong { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.opt-btn.show-correct { border-color: var(--success); box-shadow: 0 0 0 1px var(--success); }
+.explanation { margin-top: 1.5rem; padding: 1.25rem; border-left: 4px solid var(--primary); background: var(--accent-glow); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; display: none; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-/* BUTTONS */
-.btn{padding:10px 20px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:8px}
-.btn:hover{border-color:var(--border2);background:var(--bg4)}
-.btn-primary{background:var(--purple);border-color:var(--purple);color:#fff}
-.btn-primary:hover{opacity:.88}
-.btn-green{background:var(--green-d);border-color:var(--green);color:var(--green-l)}
-.btn-sm{padding:7px 14px;font-size:13px}
-.btn-row{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap}
+/* === FLASHCARDS === */
+.fc-container { perspective: 1000px; width: 100%; max-width: 600px; margin: 0 auto 2rem; height: 300px; }
+.fc-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; }
+.fc-inner.flipped { transform: rotateY(180deg); }
+.fc-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2.5rem; border-radius: var(--radius-lg); border: 1px solid var(--panel-border); background: var(--bg-glass); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.fc-back { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(26,29,45,0.9), rgba(38,43,66,0.9)); border-color: var(--primary-light); }
+.fc-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dark); margin-bottom: 1rem; }
+.fc-content { font-size: 1.25rem; font-weight: 500; color: #fff; line-height: 1.5; }
+.fc-back .fc-content { font-size: 1.1rem; color: #e2e8f0; font-weight: 400; }
 
-/* RESULTS */
-.result-ring{width:120px;height:120px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:32px;font-weight:800;border:6px solid var(--green);margin:0 auto 1rem}
-.result-center{text-align:center;padding:2rem}
+/* === SANDBOX / VIZ === */
+.sandbox-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); }
+.control-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.control-header { display: flex; justify-content: space-between; font-size: 0.875rem; color: var(--text-muted); }
+input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px rgba(99,102,241,0.5); }
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: var(--text-dark); border-radius: 2px; }
+canvas { max-width: 100%; background: rgba(0,0,0,0.15); border-radius: var(--radius-sm); border: 1px solid var(--panel-border); padding: 1rem; }
+.metrics-row { display: flex; justify-content: space-around; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--panel-border); }
+.metric { text-align: center; }
+.metric-val { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
 
-/* SECTION */
-.section-hd{margin-bottom:1.25rem}
-.section-title{font-size:22px;font-weight:800;margin-bottom:4px}
-.section-sub{font-size:14px;color:var(--text2)}
+/* === EXAM === */
+.exam-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.exam-summary { text-align: center; padding: 3rem; }
+.circle-score { width: 150px; height: 150px; border-radius: 50%; border: 8px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 800; margin: 0 auto 1.5rem; text-shadow: 0 0 20px rgba(99,102,241,0.5); box-shadow: 0 0 30px rgba(99,102,241,0.2); }
 
-/* FLASHCARD */
-.fc-scene{perspective:1200px;height:220px;cursor:pointer}
-.fc-card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:.55s}
-.fc-card.flipped{transform:rotateY(180deg)}
-.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;border:1px solid var(--border)}
-.fc-front{background:var(--bg2)}
-.fc-back{background:var(--bg3);border-color:var(--purple-d);transform:rotateY(180deg)}
-.fc-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:12px}
-.fc-text{font-size:15px;line-height:1.6;color:var(--text)}
-
-/* TABS */
-.inner-tabs{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
-.inner-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:.15s}
-.inner-tab:hover{background:var(--bg3);color:var(--text)}
-.inner-tab.active{background:var(--purple);border-color:var(--purple);color:#fff}
-
-.q-counter{font-size:13px;color:var(--text2);margin-bottom:.5rem}
-.text-green{color:var(--green)}
-.text-amber{color:var(--amber)}
-.text-red{color:var(--red)}
-.text-purple{color:var(--purple-l)}
-.chip{background:var(--bg3);padding:4px 10px;border-radius:6px;font-size:12px;color:var(--text2);border:1px solid var(--border)}
-@media(max-width:680px){.sidebar{display:none}.layout{flex-direction:column}}
+/* UTILS */
+.hidden { display: none !important; }
+.text-green { color: var(--success); }
+.text-red { color: var(--danger); }
+.text-amber { color: var(--warning); }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--text-dark); border-radius: 4px; }
 </style>
 </head>
 <body>
 
-<div class="nav">
-  <span class="logo">StatLearn Pro</span>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="goPage('dashboard')" id="nt-dashboard"><i class="ti ti-home" aria-hidden="true"></i> Dashboard</button>
-    <button class="nav-tab" onclick="goPage('learn')" id="nt-learn"><i class="ti ti-book" aria-hidden="true"></i> Lernen</button>
-    <button class="nav-tab" onclick="goPage('viz')" id="nt-viz"><i class="ti ti-chart-line" aria-hidden="true"></i> Visualisierungen</button>
-    <button class="nav-tab" onclick="goPage('exam')" id="nt-exam"><i class="ti ti-certificate" aria-hidden="true"></i> Prüfung</button>
+<nav class="navbar">
+  <div class="brand"><i class="ti ti-chart-dots"></i> StatLearn Pro</div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="app.navigate('dashboard')" id="nav-dashboard"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+    <button class="nav-btn" onclick="app.navigate('learn')" id="nav-learn"><i class="ti ti-book"></i> Lernbereich</button>
+    <button class="nav-btn" onclick="app.navigate('exam')" id="nav-exam"><i class="ti ti-certificate"></i> Prüfungssimulation</button>
   </div>
-  <div class="streak-badge" style="margin-left:.75rem"><i class="ti ti-flame" aria-hidden="true"></i><span id="streak-num">0</span></div>
-</div>
+  <div class="badge badge-purple" style="display:flex;align-items:center;gap:6px;">
+    <i class="ti ti-flame"></i> Streak: <span id="ui-streak">0</span>
+  </div>
+</nav>
 
-<div class="layout">
-  <div class="sidebar">
-    <div class="sb-label">Kapitel</div>
-    <div id="sb-topics"></div>
-  </div>
-  <div class="main-area" id="main"></div>
+<div class="app-container">
+  <aside class="sidebar">
+    <div class="sb-label">ISLP Kapitel</div>
+    <div id="sidebar-topics"></div>
+  </aside>
+
+  <main class="main-content" id="main-view"></main>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
-/* ===================== EXTENDED STATIC QUESTIONS DATA POOL ===================== */
-const QUESTION_POOL = {
-  'intro': [
-    {id:'i1', difficulty:'easy', question:'Was ist der Hauptunterschied zwischen Supervised und Unsupervised Learning?', options:['A) Supervised Learning benötigt gelabelte Zielvariablen (Targets).', 'B) Unsupervised Learning nutzt lineare Modelle.', 'C) Supervised Learning ist immer ungenauer.', 'D) Es gibt keinen Unterschied.'], correct:0, explanation:'Beim Supervised Learning gibt es eine klare Zielvariable Y, die das Modell vorherzusagen versucht. Unsupervised Learning sucht stattdessen nach Mustern in Daten ohne Targets.'},
-    {id:'i2', difficulty:'medium', question:'In welchem Fall liegt primär ein "Inference"-Problem vor?', options:['A) Die exakte Vorhersage des morgigen Aktienkurses.', 'B) Das Verständnis, wie sich Werbebudgets auf den Umsatz auswirken.', 'C) Die automatisierte Erkennung von Katzen auf Bildern.', 'D) Das Berechnen von Notendurchschnitten.'], correct:1, explanation:'Bei der Inference (Inferenz) steht das Verständnis der Beziehung zwischen Prädiktoren und der Zielvariable im Vordergrund, nicht die reine Black-Box-Vorhersage.'},
-    {id:'i3', difficulty:'hard', question:'Welche Eigenschaft trifft im Regelfall auf ein hochgradig parametrisches Modell zu?', options:['A) Es besitzt eine geringe Flexibilität und neigt zu hohem Bias.', 'B) Es benötigt keine Annahmen über die funktionale Form.', 'C) Es ist hochflexibel, neigt aber schnell zu Overfitting.', 'D) Es ist immer leichter zu interpretieren als ein nicht-parametrisches Modell.'], correct:2, explanation:'Parametrische Modelle mit sehr vielen Parametern passen sich stark an die Trainingsdaten an. Sie erhöhen die Flexibilität, bergen jedoch ein großes Overfitting-Risiko.'}
+/**
+ * ISLP KNOWLEDGE BASE (Strictly based on requested chapters)
+ */
+const ISLP_DATA = {
+  topics: [
+    { id: 't1', icon: '🚀', title: 'Einführung & Modeling', desc: 'Prediction, Inference, Parametrisch vs. Non-parametrisch.' },
+    { id: 't2', icon: '⚖️', title: 'Bias-Varianz-Tradeoff', desc: 'Modellgüte, Trainings- vs. Testfehler, MSE.' },
+    { id: 't3', icon: '🧮', title: 'Klassifikation', desc: 'Naive Bayes, KNN, Logistische Regression.' },
+    { id: 't4', icon: '📈', title: 'Einfache Lin. Reg.', desc: 'Kleinste Quadrate, RSE, R²-Statistik.' },
+    { id: 't5', icon: '📉', title: 'Multiple Lin. Reg.', desc: 'F-Statistik, Multikollinearität, p-Werte.' },
+    { id: 't6', icon: '🏷️', title: 'Qualitative Prädiktoren', desc: 'Dummy-Variablen, Polynomterme.' },
+    { id: 't7', icon: '🔗', title: 'Interaktionen & Probleme', desc: 'Synergie, Ausreißer, Leverage, Heteroskedastizität.' },
+    { id: 't8', icon: '🔄', title: 'Resampling: CV', desc: 'Validation Set, LOOCV, k-Fold.' },
+    { id: 't9', icon: '🔃', title: 'Resampling: Bootstrap', desc: 'Schätzung von Standardfehlern mit Replacement.' },
+    { id: 't10', icon: '🧊', title: 'Hochdimensional (p >> n)', desc: 'Fluch der Dimensionalität, Overfitting-Gefahr.' },
+    { id: 't11', icon: '✂️', title: 'Lasso-Regression', desc: 'L1-Regularisierung, Feature Selection, Shrinkage.' }
   ],
-  'bias-var': [
-    {id:'bv1', difficulty:'easy', question:'Was passiert beim Overfitting mit dem Training Error und dem Test Error?', options:['A) Beide Fehler sinken gleichermaßen.', 'B) Der Training Error sinkt, aber der Test Error steigt.', 'C) Der Training Error steigt, der Test Error sinkt.', 'D) Beide Fehler steigen.'], correct:1, explanation:'Overfitting bedeutet, dass das Modell das Rauschen der Trainingsdaten auswendig lernt. Der Training Error wird minimal, aber auf neuen Daten (Test Error) scheitert das Modell.'},
-    {id:'bv2', difficulty:'medium', question:'Wie verhalten sich Bias und Varianz, wenn die Modellkomplexität zunimmt?', options:['A) Bias steigt, Varianz sinkt.', 'B) Bias sinkt, Varianz sinkt.', 'C) Bias sinkt, Varianz steigt.', 'D) Beide bleiben konstant.'], correct:2, explanation:'Mehr Komplexität erlaubt es dem Modell, komplexe Strukturen zu lernen (niedriger Bias). Gleichzeitig reagiert das Modell sensibler auf kleine Datenänderungen (hohe Varianz).'},
-    {id:'bv3', difficulty:'hard', question:'Aus welchen drei mathematischen Komponenten setzt sich der erwartete Test-MSE zusammen?', options:['A) Residuen, Achsenabschnitt und Steigung', 'B) Squared Bias, Variance und Irreducible Error Variance', 'C) R-Quadrat, F-Statistik und t-Wert', 'D) Trainingsfehler, Validierungsfehler und Stichprobenfehler'], correct:1, explanation:'Die mathematische Zerlegung lautet: Erwarteter Test-MSE = [Bias(f_hat)]² + Var(f_hat) + Var(epsilon). Letzteres ist das nicht reduzierbare Rauschen.'}
+  theory: {
+    't1': `<h3>Statistical Learning</h3><p>Statistical Learning bezeichnet Werkzeuge zum Verständnis von Daten. <strong>Prediction (Vorhersage):</strong> Fokus auf die Genauigkeit der Vorhersage <span class="math">Ŷ = f̂(X)</span> (Modell als Blackbox). <strong>Inference (Inferenz):</strong> Fokus auf das Verständnis der Beziehung zwischen <span class="math">X</span> und <span class="math">Y</span> (Welche Prädiktoren sind wichtig? Ist der Effekt positiv/negativ?).</p><h3>Parametrisch vs. Non-Parametrisch</h3><ul><li><strong>Parametrisch:</strong> 1. Annahme über die Form von f (z.B. linear). 2. Schätzung der Parameter (z.B. OLS). Vorteil: Leicht interpretierbar. Nachteil: Gefahr starker Verzerrung (Bias), wenn Annahme falsch ist.</li><li><strong>Non-parametrisch:</strong> Keine explizite Annahme über die Form von f. Vorteil: Flexibel. Nachteil: Benötigt sehr viele Beobachtungen für genaue Schätzungen ohne Overfitting.</li></ul>`,
+    't2': `<h3>Der Bias-Varianz-Tradeoff</h3><p>Der erwartete Test-MSE für einen neuen Wert <span class="math">x_0</span> lässt sich zerlegen in: <span class="math">Test-MSE = Var(f̂(x_0)) + [Bias(f̂(x_0))]² + Var(&epsilon;)</span>.</p><ul><li><strong>Varianz:</strong> Wie stark ändert sich <span class="math">f̂</span>, wenn ein anderer Trainingsdatensatz verwendet wird? Hohe Flexibilität = hohe Varianz.</li><li><strong>Bias (Verzerrung):</strong> Der Fehler durch Annäherung eines komplexen realen Problems durch ein simples Modell (z.B. linear). Hohe Flexibilität = geringer Bias.</li><li><strong>Irreducible Error:</strong> <span class="math">Var(&epsilon;)</span>. Die Varianz des Fehlerterms. Die untere Grenze, die kein Modell unterschreiten kann.</li></ul><p><strong>Overfitting:</strong> Ein hochflexibles Modell lernt das Rauschen der Trainingsdaten. Der Trainingsfehler sinkt gegen Null, aber der Testfehler steigt U-förmig wieder an.</p>`,
+    't3': `<h3>Klassifikationsmodelle</h3><p><strong>Logistische Regression:</strong> Modelliert Wahrscheinlichkeiten mittels der Sigmoid-Funktion: <span class="math">p(X) = e^(β0+β1X) / (1+e^(β0+β1X))</span>. Die Log-Odds (Logit) sind linear: <span class="math">log(p(X)/(1-p(X))) = β0 + β1X</span>.</p><p><strong>K-Nearest Neighbors (KNN):</strong> Non-parametrisch. Bestimmt die K nächsten Trainingspunkte zu einem Testpunkt und weist die Mehrheitsklasse zu. <span class="math">K=1</span> bedeutet extrem hohe Varianz, geringen Bias (gezackte Decision Boundary). Großes K bedeutet geringere Varianz, hohen Bias (glatte Boundary).</p><p><strong>Naive Bayes:</strong> Geht davon aus, dass alle Prädiktoren bedingt durch die Klasse unabhängig sind. Trotz dieser "naiven" Annahme oft sehr leistungsstark, da es die Schätzung von komplexen gemeinsamen Verteilungen erspart (Reduktion der Varianz auf Kosten von Bias).</p>`,
+    't4': `<h3>Einfache Lineare Regression</h3><p>Modelliert eine lineare Beziehung: <span class="math">Y ≈ β0 + β1X</span>. OLS (Ordinary Least Squares) schätzt die Parameter so, dass die Residuenquadratsumme (RSS) minimiert wird.</p><ul><li><strong>RSE (Residual Standard Error):</strong> Schätzer für die Standardabweichung des Fehlerterms <span class="math">&epsilon;</span>. Absolute Maßzahl für den Lack-of-Fit.</li><li><strong>R²-Statistik:</strong> Anteil der durch das Modell erklärten Varianz an der Gesamtvarianz: <span class="math">R² = (TSS - RSS)/TSS</span>. Wert zwischen 0 und 1.</li><li><strong>Hypothesentest:</strong> Prüft <span class="math">H_0: β_1 = 0</span> mittels t-Statistik. Ein p-Wert < 0.05 führt typischerweise zur Ablehnung der Nullhypothese.</li></ul>`,
+    't5': `<h3>Multiple Lineare Regression</h3><p>Erweiterung auf p Prädiktoren: <span class="math">Y = β0 + β1X1 + ... + βpXp + &epsilon;</span>. <span class="math">βj</span> ist der durchschnittliche Effekt einer Erhöhung von <span class="math">Xj</span> um eine Einheit, <strong>während alle anderen Prädiktoren konstant gehalten werden</strong>.</p><ul><li><strong>Globale Nullhypothese:</strong> <span class="math">H_0: β_1 = β_2 = ... = β_p = 0</span>. Wird durch die <strong>F-Statistik</strong> getestet. Wichtig bei großem p, um False Discoveries bei einzelnen t-Tests zu vermeiden.</li><li><strong>Multikollinearität:</strong> Zwei oder mehr Prädiktoren sind stark korreliert. Führt zu aufgeblähten Standardfehlern der Koeffizienten (messbar durch den VIF - Variance Inflation Factor). VIF > 5 oder 10 ist kritisch.</li></ul>`,
+    't6': `<h3>Qualitative Prädiktoren & Polynome</h3><p><strong>Dummy-Variablen:</strong> Bei k Kategorien benötigt man exakt <span class="math">k - 1</span> Dummy-Variablen. Die verbleibende Kategorie ist die Baseline (fließt in den Intercept <span class="math">β_0</span> ein). Codiert man versehentlich k Dummies + Intercept, entsteht perfekte Kollinearität (Matrix ist nicht invertierbar).</p><p><strong>Polynomregression:</strong> Erweitert das lineare Modell durch Potenzen: <span class="math">Y = β_0 + β_1X + β_2X² + ...</span>. Obwohl X² nicht linear in X ist, bleibt es ein lineares Modell bezüglich der Parameter <span class="math">β</span> und kann per OLS geschätzt werden. Zu hohe Grade führen jedoch starkem Overfitting an den Rändern.</p>`,
+    't7': `<h3>Interaktionen & Diagnose</h3><p><strong>Interaktionsterme (Synergie):</strong> Modelliert, wenn der Effekt von <span class="math">X_1</span> auf <span class="math">Y</span> vom Wert von <span class="math">X_2</span> abhängt: <span class="math">Y = β_0 + β_1X_1 + β_2X_2 + β_3(X_1 × X_2)</span>. <em>Hierarchisches Prinzip:</em> Wenn ein Interaktionsterm im Modell ist, müssen die Haupteffekte bleiben, selbst wenn ihre p-Werte nicht signifikant sind.</p><p><strong>Potentielle Probleme:</strong></p><ul><li><em>Heteroskedastizität:</em> Nicht-konstante Fehlervarianz (Trichterform im Residualplot). Lösung: log(Y) oder √Y Transformation.</li><li><em>Ausreißer:</em> Extremer Y-Wert. Hat wenig Einfluss auf die Gerade bei niedrigem Leverage, verschlechtert aber den RSE drastisch.</li><li><em>High Leverage Points:</em> Ein ungewöhnlicher X-Wert. Zieht die Regressionsgerade stark an sich. (Gefährlichste Kombi: High Leverage + Ausreißer).</li></ul>`,
+    't8': `<h3>Kreuzvalidierung (CV)</h3><p>Methoden zur Schätzung des Testfehlers auf Basis der Trainingsdaten.</p><ul><li><strong>Validation Set:</strong> Zufälliger 50/50 Split. Hoch variabel, überschätzt oft den Testfehler, da das Modell nur mit der halben Datenmenge trainiert wird.</li><li><strong>LOOCV (Leave-One-Out):</strong> <span class="math">n-1</span> Training, 1 Test. Wird n-mal wiederholt. Fast bias-frei, aber hohe Varianz (Modelle sind fast identisch) und rechenintensiv. (Shortcut existiert für OLS).</li><li><strong>k-Fold CV:</strong> Daten in k (oft 5 oder 10) Folds aufgeteilt. Sweet-Spot im Bias-Varianz-Tradeoff. Weniger Varianz in der Schätzung als LOOCV, weniger Bias als Validation Set.</li></ul>`,
+    't9': `<h3>Bootstrap</h3><p>Eine universelle Methode zur Schätzung der Unsicherheit (z.B. Standardfehler, Konfidenzintervalle) für fast jede Statistik.</p><ul><li>Zieht <span class="math">B</span> mal wiederholt Stichproben der Größe <span class="math">n</span> <strong>mit Zurücklegen (with replacement)</strong> aus den Originaldaten.</li><li>Bei ausreichend großem <span class="math">n</span> enthält ein Bootstrap-Sample durchschnittlich ca. 63.2% der ursprünglichen, distinkten Beobachtungen (da <span class="math">1 - (1 - 1/n)^n ≈ 1 - 1/e ≈ 0.632</span>).</li><li>Erlaubt empirische Schätzungen der Varianz, wenn keine analytischen Formeln vorliegen oder OLS-Annahmen (wie konstante Fehlervarianz) verletzt sind.</li></ul>`,
+    't10': `<h3>High-Dimensional Data (p >> n)</h3><p>Tritt auf, wenn es mehr Features <span class="math">p</span> als Beobachtungen <span class="math">n</span> gibt (z.B. Genetik, Suchbegriffe).</p><ul><li>Klassisches OLS schlägt fehl: Es gibt keine eindeutige Lösung, das Modell fittet die Trainingsdaten exakt (Residuen = 0, R² = 1), liefert aber extrem schlechte Testfehler (katastrophales Overfitting).</li><li>Der "Fluch der Dimensionalität": Hinzufügen von reinen Noise-Features erhöht zwar fälschlicherweise das Trainings-R², zerstört aber die Varianz des Modells auf Testdaten.</li><li>Lösung: Methoden, die Varianz extrem reduzieren, wie Lasso, Ridge oder PCA-Regression. Klassische Gütemaße (C_p, AIC, adjustiertes R²) sind hier nicht anwendbar!</li></ul>`,
+    't11': `<h3>Shrinkage: Die Lasso-Regression</h3><p>Lasso minimiert die OLS-Gleichung, fügt aber einen Strafterm (Penalty) hinzu: <span class="math">λ ∑|β_j|</span> (L1-Norm). <span class="math">λ</span> steuert die Stärke der Strafe.</p><ul><li><strong>Vorteil ggü. Ridge:</strong> Der L1-Strafterm bildet einen rautenförmigen Nebenbedingungsraum (Ecken auf den Achsen). Das führt dazu, dass unwichtige Koeffizienten <strong>exakt auf Null</strong> gesetzt werden (Feature Selection / Sparsity).</li><li>Führt zu deutlich interpretierbareren Modellen als Ridge.</li><li>Je größer <span class="math">λ</span>, desto geringer die Varianz des Modells, aber desto höher der Bias. Das optimale <span class="math">λ</span> wird über Kreuzvalidierung bestimmt.</li><li>Erfordert zwingend eine vorherige Standardisierung der Prädiktoren!</li></ul>`
+  },
+  questions: [
+    { t: 't1', d: 1, q: "Was ist der primäre Fokus bei einem 'Inference'-Problem laut ISLP?", o: ["Die absolute Vorhersagegenauigkeit von Ŷ zu maximieren.", "Das Modell als reine Blackbox zu behandeln.", "Die Beziehung zwischen den Prädiktoren X und der Zielvariable Y zu verstehen.", "Unüberwachtes Lernen durchzuführen."], c: 2, e: "Bei Inferenz geht es darum, die kausalen oder strukturellen Zusammenhänge zu verstehen (welche X beeinflussen Y wie?), nicht nur um die Vorhersage (Prediction)." },
+    { t: 't1', d: 2, q: "Welche Aussage trifft auf parametrische Methoden zu?", o: ["Sie erfordern keine Annahmen über die Form der Funktion f.", "Sie schätzen eine kleine Anzahl von Parametern, bergen aber das Risiko eines hohen Bias bei falscher Form-Annahme.", "Sie sind immer genauer als non-parametrische Methoden.", "Sie können nicht überfitten."], c: 1, e: "Parametrische Methoden reduzieren das Schätzproblem auf wenige Parameter, was recheneffizient ist, aber bei falscher Annahme einen systematischen Fehler (Bias) erzeugt." },
+    
+    { t: 't2', d: 1, q: "Was beschreibt der 'Irreducible Error'?", o: ["Den Fehler, der durch ein schlecht gewähltes Modell entsteht.", "Die Varianz des Fehlerterms ε, die von keinem Modell vorhergesagt werden kann.", "Die Differenz zwischen Training- und Test-MSE.", "Den Bias eines linearen Modells."], c: 1, e: "Selbst wenn wir die wahre Funktion f(X) exakt schätzen, bleibt die zufällige Streuung des Fehlerterms ε als untere Schranke der Vorhersagegenauigkeit." },
+    { t: 't2', d: 3, q: "Wie verhalten sich Training- und Test-MSE bei stark zunehmender Modellkomplexität?", o: ["Beide sinken monoton gegen Null.", "Beide steigen stetig an.", "Der Trainings-MSE sinkt gegen Null, der Test-MSE sinkt zunächst und steigt dann stark an (U-Form).", "Der Trainings-MSE steigt, der Test-MSE sinkt."], c: 2, e: "Das klassische Overfitting: Das Modell passt sich perfekt an das Rauschen der Trainingsdaten an (Trainings-MSE fällt), verliert aber die Generalisierbarkeit auf neue Daten (Test-MSE steigt stark)." },
+    
+    { t: 't3', d: 2, q: "Welche grundlegende (oft unrealistische) Annahme trifft der 'Naive' Bayes Klassifikator?", o: ["Die Klassen sind perfekt linear trennbar.", "Die Prädiktoren sind innerhalb einer Klasse stochastisch unabhängig voneinander.", "Die Fehlerterme sind normalverteilt.", "Die Zielvariable ist stetig."], c: 1, e: "Das 'Naiv' rührt von der starken Annahme, dass die Kovarianz zwischen Features bedingt auf die Klasse null ist, was die Schätzung massiv vereinfacht." },
+    { t: 't3', d: 2, q: "Was modelliert die Logistische Regression mathematisch gesehen als lineare Funktion?", o: ["Die Wahrscheinlichkeit p(X) direkt.", "Die Klasse Y ∈ {0, 1}.", "Die Log-Odds (den Logit): log(p(X)/(1-p(X))).", "Den Gini-Index."], c: 2, e: "Während die vorhergesagten Wahrscheinlichkeiten durch die s-förmige Sigmoid-Funktion laufen, sind die Log-Odds (das Verhältnis von P(Erfolg) zu P(Misserfolg) logarithmiert) eine strikt lineare Funktion der Parameter." },
+    
+    { t: 't4', d: 1, q: "Was minimiert das OLS-Verfahren (Ordinary Least Squares)?", o: ["Das Bestimmtheitsmaß R².", "Die Varianz der Prädiktoren.", "Die Summe der quadrierten Residuen (RSS).", "Die absoluten Abstände der Fehler."], c: 2, e: "OLS sucht die Regressionskoeffizienten so, dass die Summe der quadrierten vertikalen Abstände der Datenpunkte zur Gerade (RSS) so klein wie möglich wird." },
+    { t: 't4', d: 2, q: "Was drückt die R²-Statistik in der einfachen linearen Regression aus?", o: ["Die Standardabweichung des Fehlerterms.", "Den Anteil der Gesamtvarianz in Y, der durch das Modell (bzw. X) erklärt wird.", "Den p-Wert des Steigungskoeffizienten.", "Den Korrelationskoeffizienten zum Quadrat (bei multipler Regression falsch)."], c: 1, e: "R² = (TSS - RSS) / TSS. Es ist eine dimensionslose Kennzahl zwischen 0 und 1." },
+
+    { t: 't5', d: 3, q: "Warum nutzen wir die F-Statistik, um die globale Signifikanz eines multiplen Modells zu testen, anstatt nur die p-Werte der t-Tests zu betrachten?", o: ["Weil t-Tests bei multipler Regression mathematisch ungültig sind.", "Weil bei großem p durch multiplen Fehler 1. Art fälschlicherweise fast immer einzelne Prädiktoren signifikant erscheinen würden.", "Weil die F-Statistik den R²-Wert direkt optimiert.", "Weil die t-Statistik keine Interaktionsterme berücksichtigen kann."], c: 1, e: "Bei z.B. 100 nutzlosen Variablen haben im Schnitt 5 Variablen rein zufällig einen p-Wert < 0.05. Der globale F-Test schützt vor diesem multiplen Testproblem." },
+    { t: 't5', d: 2, q: "Was zeigt ein hoher VIF (Variance Inflation Factor, z.B. > 10) an?", o: ["Heteroskedastizität der Fehlerterme.", "Starke Multikollinearität (hohe Korrelation zwischen Prädiktoren).", "Einen High Leverage Point im Datensatz.", "Ein Modell, das zu wenig Variablen enthält."], c: 1, e: "Multikollinearität bläht die Varianz (und den Standardfehler) der Koeffizienten auf, was es schwer macht, den echten Effekt einzelner Variablen zu isolieren." },
+
+    { t: 't6', d: 1, q: "Wie viele Dummy-Variablen werden für ein qualitatives Feature mit 5 Ausprägungen (z.B. Wochentage Mo-Fr) in einer linearen Regression benötigt?", o: ["5", "1", "4", "25"], c: 2, e: "Man braucht immer k-1 Dummies. Die fehlende Kategorie wird zur 'Baseline', deren Effekt vom Intercept (Achsenabschnitt) aufgefangen wird. Verwendet man k Dummies plus Intercept, entsteht die 'Dummy Variable Trap' (Singularität)." },
+    { t: 't6', d: 2, q: "Warum rät ISLP oft davon ab, bei Polynomregressionen sehr hohe Grade (z.B. d=15) zu verwenden?", o: ["Weil sie nicht mehr per OLS geschätzt werden können.", "Wegen extremer Oszillationen und heftigem Overfitting, besonders an den Rändern des Datenbereichs.", "Weil der Bias dadurch unkontrollierbar steigt.", "Weil das Modell dann nicht mehr additiv ist."], c: 1, e: "Polynome hohen Grades sind global sehr instabil. Ein kleiner Ausreißer ändert die Kurve überall. Daher sind z.B. Splines (stückweise Polynome) vorzuziehen." },
+
+    { t: 't7', d: 2, q: "Was besagt das Hierarchische Prinzip bei Interaktionstermen (X1 × X2)?", o: ["Die Interaktion darf nur aufgenommen werden, wenn sie nicht-linear transformiert wird.", "Wenn die Interaktion im Modell ist, müssen auch die Haupteffekte X1 und X2 im Modell bleiben, selbst wenn ihre individuellen p-Werte nicht signifikant sind.", "Haupteffekte müssen hierarchisch vor Interaktionen gelöscht werden.", "Qualitative Variablen dürfen nicht interagieren."], c: 1, e: "Das Entfernen der Haupteffekte würde die Bedeutung des Interaktionsterms verändern und die Interpretation massiv erschweren." },
+    { t: 't7', d: 3, q: "Wie unterscheiden sich ein 'Outlier' und ein 'High Leverage Point'?", o: ["Es gibt keinen Unterschied.", "Outlier haben extreme X-Werte, Leverage Points haben extreme Y-Werte.", "Ein Outlier hat einen unüblichen Y-Wert (hohes Residuum). Ein High Leverage Point hat einen unüblichen X-Wert (zieht die Gerade an sich).", "Leverage Points können nur bei nicht-linearen Modellen auftreten."], c: 2, e: "Ein Outlier mit niedrigem Leverage ändert die Modellkoeffizienten kaum, verschlechtert aber den RSE. Ein Leverage-Punkt hat einen massiven 'Hebelarm' auf die Steigung." },
+
+    { t: 't8', d: 2, q: "Warum wird die k-Fold Cross-Validation (mit z.B. k=10) oft der LOOCV (Leave-One-Out) vorgezogen?", o: ["LOOCV hat einen zu hohen Bias.", "k-Fold hat eine geringere Varianz in der Schätzung des Testfehlers und ist viel recheneffizienter.", "LOOCV kann nicht auf Klassifikationsprobleme angewendet werden.", "k-Fold interpoliert die Trainingsdaten besser."], c: 1, e: "LOOCV mittelt über fast identische Trainingssets. Da diese extrem positiv korreliert sind, hat der Mittelwert (die LOOCV-Schätzung) eine höhere Varianz. k-Fold bietet einen besseren Bias-Varianz-Kompromiss." },
+
+    { t: 't9', d: 3, q: "Wie groß ist bei großen n näherungsweise die Wahrscheinlichkeit, dass eine bestimmte Original-Beobachtung NICHT in einer speziellen Bootstrap-Stichprobe (Größe n, mit Zurücklegen) landet?", o: ["ca. 50%", "ca. 5%", "ca. 36.8% (entspricht 1/e)", "ca. 63.2%"], c: 2, e: "Die Wkt., in einem Zug nicht gezogen zu werden, ist (1 - 1/n). Bei n Zügen ist es (1 - 1/n)^n. Für n gegen unendlich konvergiert das gegen 1/e ≈ 0.368. Folglich enthält ein Bootstrap-Sample nur ca. 63.2% distinkte Originaldaten." },
+
+    { t: 't10', d: 2, q: "Warum ist das R² auf Trainingsdaten wertlos, wenn p >= n (Hochdimensional)?", o: ["Weil p-Werte dann immer 0 sind.", "Weil OLS in diesem Fall immer den Rausch der Daten perfekt auswendig lernt (R²=1), was zu totalem Overfitting und schlechter Generalisierung führt.", "Weil die Matrix dann invertierbar wird.", "Weil die F-Statistik dann asymptotisch gegen Null geht."], c: 1, e: "Wenn man mehr Parameter als Datenpunkte hat, gibt es unendlich viele Hyperebenen, die den Trainingsfehler exakt auf Null bringen. Das Modell merkt sich das Rauschen." },
+
+    { t: 't11', d: 2, q: "Welches mathematische Feature der Lasso-Regression führt dazu, dass sie Variablen 'selektiert' (Koeffizienten exakt auf Null setzt)?", o: ["Die quadrierte L2-Norm Strafe.", "Der L1-Strafterm bildet einen Restriktionsraum mit spitzen Ecken (z.B. eine Raute), an denen die OLS-Konturen oft zuerst anliegen.", "Lasso invertiert die Korrelationsmatrix.", "Lasso nutzt den Gini-Index."], c: 1, e: "Ridge (L2) hat einen kreisförmigen Restriktionsraum, die Ellipsen der Fehlerfunktion berühren diesen fast nie auf den Achsen. Lasso (L1) hat Ecken auf den Achsen; wird dort berührt, ist der Koeffizient exakt 0." },
+    { t: 't11', d: 3, q: "Was muss zwingend mit den Prädiktoren X geschehen, BEVOR eine Ridge- oder Lasso-Regression durchgeführt wird?", o: ["Sie müssen quadriert werden.", "Sie müssen logarithmiert werden.", "Sie müssen standardisiert werden (Mittelwert 0, Varianz 1), da der Shrinkage-Penalty sonst skalenabhängig extrem verzerrt.", "Sie müssen in Dummy-Variablen überführt werden."], c: 2, e: "Da die Penalty-Terme (z.B. beta²) die Koeffizienten summieren, würde eine Variable, die in kleinen Einheiten (Milliarden vs. Promille) gemessen wird, unproportional stark bestraft, nur weil ihr Koeffizient numerisch groß sein muss." }
   ],
-  'classifiers': [
-    {id:'c1', difficulty:'medium', question:'Welche Annahme macht der "Naive" Bayes Klassifikator?', options:['A) Die Features sind vollkommen linear abhängig.', 'B) Alle Features sind innerhalb einer Klasse unabhängig voneinander.', 'C) Die Zielvariable ist immer kontinuierlich.', 'D) Die Fehlerterme weisen Heteroskedastizität auf.'], correct:1, explanation:'Das "Naive" resultiert aus der oft unrealistischen Annahme, dass alle Prädiktoren bedingt durch die Klassenzugehörigkeit stochastisch unabhängig voneinander sind.'},
-    {id:'c2', difficulty:'easy', question:'Wie reagiert der K-Nearest-Neighbors (KNN) Klassifikator, wenn K gegen 1 geht?', options:['A) Die Decision Boundary wird extrem glatt.', 'B) Das Modell wird weniger flexibel.', 'C) Das Modell wird hochgradig flexibel und neigt zu Overfitting.', 'D) KNN verhält sich dann wie eine lineare Regression.'], correct:2, explanation:'Ein kleines K=1 bedeutet, dass die Klassifikation extrem stark von den unmittelbaren Nachbarn abhängt. Das erzeugt hochkomplexe Trennlinien und erhöht die Varianz.'},
-    {id:'c3', difficulty:'hard', question:'Was ist der Wertebereich der klassischen logistischen Funktion (Sigmoid)?', options:['A) Von -Unendlich bis +Unendlich', 'B) Strikt zwischen 0 und 1', 'C) Von -1 bis +1', 'D) Alle positiven reellen Zahlen'], correct:1, explanation:'Die Sigmoid-Funktion mappt jede reelle Zahl auf ein Intervall zwischen 0 und 1, weshalb sie sich perfekt für die Modellierung von Wahrscheinlichkeiten eignet.'}
-  ],
-  'simple-lm': [
-    {id:'slm1', difficulty:'medium', question:'Was minimiert das OLS-Verfahren (Ordinary Least Squares) bei einer einfachen Regression?', options:['A) Die Summe der absoluten Abweichungen.', 'B) Die Summe der quadrierten Residuen.', 'C) Den Korrelationskoeffizienten.', 'D) Das Bestimmtheitsmaß R-Quadrat.'], correct:1, explanation:'Die Methode der kleinsten Quadrate minimiert die Summe der quadrierten vertikalen Abweichungen (Residuen) zwischen den beobachteten Datenpunkten und der Regressionsgeraden.'},
-    {id:'slm2', difficulty:'easy', question:'Was sagt ein p-Wert von < 0.05 für den Steigungskoeffizienten Beta_1 aus?', options:['A) Die H0 (Beta_1 = 0) wird verworfen; es gibt einen signifikanten Zusammenhang.', 'B) Das Modell hat ein perfektes R-Quadrat.', 'C) Es liegt Multikollinearität vor.', 'D) Der Achsenabschnitt ist exakt Null.'], correct:0, explanation:'Ein kleiner p-Wert zeigt, dass die Wahrscheinlichkeit, einen solchen Effekt unter Gültigkeit der Nullhypothese zu beobachten, sehr gering ist. Die Nullhypothese wird verworfen.'},
-    {id:'slm3', difficulty:'hard', question:'Wie hängen die t-Statistik des Steigungskoeffizienten und die F-Statistik in einer einfachen linearen Regression zusammen?', options:['A) F ist die Quadratwurzel von t.', 'B) F ist exakt gleich t-Quadrat.', 'C) Es gibt keinen mathematischen Zusammenhang.', 'D) F ist immer genau doppelt so groß wie t.'], correct:1, explanation:'In einer einfachen linearen Regression mit nur einem Prädiktor ist die globale F-Statistik mathematisch identisch mit dem Quadrat der t-Statistik des Prädiktors (F = t²).'}
-  ],
-  'multi-lm': [
-    {id:'mlm1', difficulty:'medium', question:'Welcher Wert des Variance Inflation Factor (VIF) deutet auf kritische Multikollinearität hin?', options:['A) VIF = 1', 'B) VIF < 0', 'C) VIF > 5 oder 10', 'D) VIF = 0'], correct:2, explanation:'Ein VIF von 1 bedeutet keine Kollinearität. Werte über 5 oder 10 zeigen an, dass die Varianz eines Koeffizienten wegen Kollinearität mit anderen Prädiktoren stark aufgebläht ist.'},
-    {id:'mlm2', difficulty:'hard', question:'Warum kann das normale R-Quadrat bei einer multiplen Regression niemals sinken, wenn man Prädiktoren hinzufügt?', options:['A) Weil mehr Prädiktoren immer die Realität besser abbilden.', 'B) Weil OLS mathematisch die Residuenquadratsumme durch jeden zusätzlichen Freiheitsgrad weiter verkleinern oder gleich halten kann.', 'C) Weil sich die Freiheitsgrade im Nenner aufheben.', 'D) Das stimmt nicht, das normale R-Quadrat sinkt fast immer.'], correct:1, explanation:'Das normale R² misst den erklärten Anteil der Varianz. Da neue Variablen mathematisch minimalen Erklärungsgehalt per Zufall liefern können, sinkt die RSS nie. Deshalb nutzt man das adjusted R².'},
-    {id:'mlm3', difficulty:'easy', question:'Was prüft die Nullhypothese (H0) des globalen F-Tests bei einer multiplen Regression?', options:['A) Dass mindestens ein Prädiktor signifikant ist.', 'B) Dass alle Steigungskoeffizienten Beta_1 bis Beta_p gleichzeitig Null sind.', 'C) Dass der Achsenabschnitt Null ist.', 'D) Dass die Residuen normalverteilt sind.'], correct:1, explanation:'Der globale F-Test prüft, ob das Gesamtmodell überhaupt Vorhersagekraft besitzt. Die H0 lautet: Beta_1 = Beta_2 = ... = Beta_p = 0.'}
-  ],
-  'qualitative': [
-    {id:'q1', difficulty:'easy', question:'Wie viele Dummy-Variablen werden für ein qualitatives Merkmal mit k Ausprägungen benötigt?', options:['A) k', 'B) k - 1', 'C) k + 1', 'D) 2^k'], correct:1, explanation:'Man benötigt genau k - 1 Dummy-Variablen. Die verbleibende Kategorie dient als Referenzkategorie und wird über den Intercept dargestellt.'},
-    {id:'q2', difficulty:'medium', question:'Was passiert, wenn man versehentlich k Dummy-Variablen für k Ausprägungen zusammen mit einem Achsenabschnitt (Intercept) einschließt?', options:['A) Nichts, das Modell wird stabiler.', 'B) Es entsteht perfekte Multikollinearität (Dummy Variable Trap).', 'C) Der Trainingsfehler sinkt schlagartig auf Null.', 'D) Die Schätzwerte verdoppeln sich.'], correct:1, explanation:'Da die Summe aller k Dummies immer exakt 1 ergibt (was der Vektor des Intercepts ist), sind die Spalten linear abhängig. Die Matrix lässt sich nicht invertieren.'},
-    {id:'q3', difficulty:'hard', question:'Wie interpretiert man den Koeffizienten einer Dummy-Variable in einer Regression?', options:['A) Als prozentuale Änderung der Zielvariable Y.', 'B) Als die Differenz im erwarteten Wert von Y zwischen dieser Kategorie und der Referenzkategorie.', 'C) Als Steigung bei kontinuierlichen Werten.', 'D) Als Korrelationskoeffizient der Gruppe.'], correct:1, explanation:'Der Koeffizient einer Dummy-Variable gibt den additiven Unterschied im Erwartungswert der Zielvariable im Vergleich zur Basis-/Referenzgruppe an, wenn alle anderen Variablen konstant gehalten werden.'}
-  ],
-  'polynomial': [
-    {id:'p1', difficulty:'medium', question:'Was ist die Gefahr, wenn man den Grad eines Polynoms in der Regression zu hoch wählt?', options:['A) Extrem starkes Overfitting an den Rändern des Datenbereichs.', 'B) Das Modell wird strikt linear.', 'C) Die Varianz sinkt gegen Null.', 'D) Der Trainingsfehler steigt ins Unendliche.'], correct:0, explanation:'Hochgradige Polynome neigen zu starker Oszillation, insbesondere an den Rändern der Datenpunkte, was massives Overfitting verursacht.'},
-    {id:'p2', difficulty:'easy', question:'Welche Form nimmt eine Regressionskurve an, wenn nur ein quadratischer Term (X²) zusätzlich zu X aufgenommen wird?', options:['A) Eine S-Kurve (Sigmoid).', 'B) Eine Parabel.', 'C) Eine gerade Linie mit doppelter Steigung.', 'D) Eine periodische Welle.'], correct:1, explanation:'Ein rein quadratischer Term modelliert u-förmige oder umgekehrt u-förmige Krümmungen, was geometrisch einer Parabel entspricht.'},
-    {id:'p3', difficulty:'hard', question:'Warum sind hochgradige Polynome globalen Splines meistens unterlegen?', options:['A) Splines sind schwerer zu berechnen.', 'B) Polynome oszillieren außerhalb des Zentrums unkontrolliert (Runge-Phänomen), während Splines lokale Abschnitte glätten.', 'C) Splines erlauben keine Krümmungen.', 'D) Polynome haben immer einen höheren Bias.'], correct:1, explanation:'Globale Polynome erzwingen eine feste Krümmung über den gesamten Datenbereich. Splines stückeln das Problem in lokale Abschnitte auf, wodurch unerwünschtes Aufschwingen verhindert wird.'}
-  ],
-  'interaction': [
-    {id:'int1', difficulty:'medium', question:'Was besagt das hierarchische Prinzip bei der Aufnahme von Interaktionstermen?', options:['A) Interaktionsterme dürfen nur ohne Achsenabschnitt vorkommen.', 'B) Wenn eine Interaktion signifikant ist, müssen auch die Haupteffekte im Modell bleiben.', 'C) Haupteffekte müssen vor der Interaktion logarithmiert werden.', 'D) Nur lineare Effekte dürfen interagieren.'], correct:1, explanation:'Das hierarchische Prinzip besagt, dass wenn ein Interaktionsterm (X1 * X2) im Modell enthalten ist, die Haupteffekte (X1 und X2) ebenfalls enthalten sein müssen, selbst wenn deren p-Werte nicht signifikant sind.'},
-    {id:'int2', difficulty:'hard', question:'Ein Modell lautet Y = Beta_0 + Beta_1*X1 + Beta_2*X2 + Beta_3*(X1*X2). Wie verändert sich der Effekt von X1, wenn X2 um eine Einheit steigt?', options:['A) Er bleibt exakt konstant bei Beta_1.', 'B) Er verändert sich um den Faktor Beta_3.', 'C) Er verändert sich um den Summanden Beta_3.', 'D) Er wird komplett ausgelöscht.'], correct:2, explanation:'Leitet man die Gleichung partiell nach X1 ab, erhält man dY/dX1 = Beta_1 + Beta_3*X2. Steigt X2 um 1 Einheit, ändert sich die Steigung bezüglich X1 also um Beta_3.'},
-    {id:'int3', difficulty:'easy', question:'Was modelliert ein Interaktionsterm in einer Regressionsanalyse primär?', options:['A) Die pure Nicht-Linearität eines einzelnen Features.', 'B) Dass die Wirkung eines Prädiktors von der Ausprägung eines anderen Prädiktors abhängt.', 'C) Den Autokorrelationskoeffizienten der Fehlerterme.', 'D) Den Einfluss von fehlenden Werten.'], correct:1, explanation:'Interaktionen (Synergieeffekte) zeigen, dass sich der Effekt von Variable A verändert oder moderiert wird, je nachdem, welchen Wert Variable B besitzt.'}
-  ],
-  'problems': [
-    {id:'pr1', difficulty:'medium', question:'Was ist ein typisches Anzeichen für Heteroskedastizität?', options:['A) Ein trichterförmiges Muster im Residualplot.', 'B) Ein perfektes R-Quadrat von 1.0.', 'C) Vollkommen normalverteilte Fehler.', 'D) Eine extrem hohe F-Statistik.'], correct:0, explanation:'Heteroskedastizität bedeutet, dass die Varianz der Fehlerterme nicht konstant ist. Im Residualplot äußert sich dies meist durch eine Trichterform.'},
-    {id:'pr2', difficulty:'medium', question:'Welchen Effekt haben Ausreißer (Outliers) primär auf die Regressionsgerade?', options:['A) Sie verändern immer die Steigung massiv.', 'B) Sie blähen den RSE auf und verfälschen Konfidenzintervalle, verändern die Gerade bei niedrigem Leverage aber kaum.', 'C) Sie eliminieren Multikollinearität.', 'D) Sie zwingen den Intercept auf Null.'], correct:1, explanation:'Ausreißer mit geringem Leverage (Hebelarm) ändern die Lage der Gerade kaum, verschlechtern aber die Fehlerkennzahlen (RSE) massiv. Ausreißer mit hohem Leverage ziehen die Gerade stark an sich.'},
-    {id:'pr3', difficulty:'hard', question:'Was schätzt der Hebelwert (Leverage / Hat-Value h_ii) einer Beobachtung?', options:['A) Wie weit der Y-Wert vom Mittelwert abweicht.', 'B) Wie weit die Prädiktorwerte X des Datenpunkts vom Zentrum aller X-Werte entfernt liegen.', 'C) Die Stärke der Autokorrelation.', 'D) Den p-Wert des Achsenabschnitts.'], correct:1, explanation:'Der Leverage-Wert misst die Entfernung der unabhängigen Variablen eines Datenpunkts zum Schwerpunkt. Hoher Leverage bedeutet, dass der Punkt eine extreme Prädiktorkombination aufweist und die Gerade stark kippen kann.'}
-  ],
-  'cv': [
-    {id:'cv1', difficulty:'medium', question:'Welchen Vorteil hat k-Fold Cross-Validation gegenüber der einfachen Validation-Set-Methode?', options:['A) Sie benötigt deutlich weniger Rechenleistung.', 'B) Die Fehlerschätzung schwankt weniger stark und nutzt Daten effizienter.', 'C) Sie ist auf ungelabelte Daten anwendbar.', 'D) Sie eliminiert den Bias vollständig.'], correct:1, explanation:'Die einfache Aufteilung hängt stark vom Zufall des Splits ab. k-Fold mittelt über k Durchgänge, was die Schätzung des Testfehlers stabiler macht.'},
-    {id:'cv2', difficulty:'hard', question:'Wie oft muss das Modell bei einer Leave-One-Out Cross-Validation (LOOCV) bei n Beobachtungen trainiert werden?', options:['A) Genau 1 Mal.', 'B) k Mal.', 'C) Genau n Mal.', 'D) n - 1 Mal.'], correct:2, explanation:'Bei LOOCV besteht das Validierungsset aus genau einer einzigen Beobachtung. Das Verfahren wird wiederholt, bis jede der n Beobachtungen genau einmal das Validierungsset war.'},
-    {id:'cv3', difficulty:'easy', question:'Was ist das primäre Ziel einer Kreuzvalidierung?', options:['A) Den Trainingsfehler auf Null zu senken.', 'B) Die Performance des Modells auf unabhängigen, ungesehenen Testdaten verlässlich zu schätzen.', 'C) Prädiktoren automatisch zu skalieren.', 'D) Den Rechenaufwand zu minimieren.'], correct:1, explanation:'Cross-Validation simuliert neue Daten, um den echten Verallgemeinerungsfehler (Test Error) abzusichern und Hyperparameter zu tunen.'}
-  ],
-  'bootstrap': [
-    {id:'b1', difficulty:'medium', question:'Wie zieht das Bootstrap-Verfahren Stichproben aus den Originaldaten?', options:['A) Ohne Zurücklegen, jeweils die Hälfte.', 'B) Mit Zurücklegen (with replacement), in der identischen Größe n.', 'C) Es werden nur Extremwerte dupliziert.', 'D) Rein deterministisch nach Rangfolge.'], correct:1, explanation:'Bootstrap repliziert Stichproben durch Ziehen mit Zurücklegen. Dabei kann ein Datenpunkt mehrfach oder gar nicht in einer Bootstrap-Stichprobe landen.'},
-    {id:'b2', difficulty:'hard', question:'Wie groß ist der ungefähre Anteil an einzigartigen Beobachtungen aus dem Originaldatensatz in einer klassischen Bootstrap-Stichprobe für großes n?', options:['A) Ca. 50%', 'B) Exakt 100%', 'C) Ca. 63.2%', 'D) Ca. 95%'], correct:2, explanation:'Die Wahrscheinlichkeit, dass eine Beobachtung bei n Ziehungen mit Zurücklegen nicht gewählt wird, konvergiert gegen 1/e ≈ 0.368. Im Umkehrschluss sind ca. 63.2% der Daten enthalten.'},
-    {id:'b3', difficulty:'easy', question:'Wofür wird das Bootstrap-Verfahren in der statistischen Modellierung hauptsächlich eingesetzt?', options:['A) Um fehlende Datenwerte zu interpolieren.', 'B) Um die Standardfehler von Schätzern und Konfidenzintervalle numerisch zu bestimmen, wenn keine analytische Formel existiert.', 'C) Um die Anzahl der Features zu reduzieren.', 'D) Um komplexe Grafiken zu zeichnen.'], correct:1, explanation:'Bootstrap erlaubt es, die Unsicherheit (Varianz, Standardfehler) fast jeder statistischen Kennzahl empirisch durch wiederholtes Resampling abzusichern.'}
-  ],
-  'highdim': [
-    {id:'h1', difficulty:'medium', question:'Was versteht man unter dem Begriff "Fluch der Dimensionalität" (Curse of Dimensionality)?', options:['A) Rechenzeit sinkt exponentiell.', 'B) Bei p >> n werden Modelle extrem instabil und overfitten im leeren Raum.', 'C) Prädiktoren verlieren ihre mathematische Definition.', 'D) Datenpunkte rücken im hochdimensionalen Raum enger zusammen.'], correct:1, explanation:'Wenn die Anzahl der Features p viel größer ist als die Stichprobengröße n, finden Modelle fast immer eine perfekte, aber bedeutungslose Trennebene.'},
-    {id:'h2', difficulty:'hard', question:'Warum ist ein extrem hohes R-Quadrat auf den Trainingsdaten in einer hochdimensionalen Umgebung (p >> n) wertlos?', options:['A) Weil der Nenner der F-Statistik negativ wird.', 'B) Weil man mit p Prädiktoren jeden Datensatz aus n Punkten perfekt interpolieren kann, ohne echte Signale zu lernen.', 'C) Weil qualitative Variablen nicht verarbeitet werden.', 'D) Weil es mathematisch unmöglich ist.'], correct:1, explanation:'Besitzt man mehr Parameter als Datenpunkte, gibt es unendlich viele mathematische Lösungen für eine perfekte Anpassung. Es ist reines Auswendiglernen des Rauschens.'},
-    {id:'h3', difficulty:'easy', question:'Was beschreibt das Phänomen der "Sparsity" (Dünnbesetztheit)?', options:['A) Dass der Datensatz fast keine Zeilen enthält.', 'B) Dass von den sehr vielen Prädiktoren p nur ein kleiner Teil wirklich echten Einfluss auf die Zielvariable hat.', 'C) Dass alle Werte im Datensatz gegen Unendlich laufen.', 'D) Dass keine kategorialen Variablen verwendet werden.'], correct:1, explanation:'Sparsity-Annahmen besagen, dass trotz riesiger Datenstrukturen nur eine überschaubare Anzahl an "wahren" Signalen das System steuert.'}
-  ],
-  'lasso': [
-    {id:'l1', difficulty:'medium', question:'Welche mathematische Besonderheit unterscheidet Lasso fundamental von Ridge Regression?', options:['A) Lasso nutzt eine L1-Penalty und kann Koeffizienten exakt auf Null setzen.', 'B) Ridge minimiert den Bias, Lasso die Varianz.', 'C) Lasso nutzt quadratische Strafterme.', 'D) Lasso funktioniert nicht bei Multikollinearität.'], correct:0, explanation:'Durch die L1-Penalty (|beta|) erzeugt Lasso eine spitze Constraint-Region. Das führt dazu, dass unbedeutende Koeffizienten exakt Null werden (Feature Selection).'},
-    {id:'l2', difficulty:'easy', question:'Was passiert mit den Regressionskoeffizienten beim Erhöhen des Tuning-Parameters Lambda gegen Unendlich?', options:['A) Sie wachsen unkontrolliert an.', 'B) Sie konvergieren alle exakt gegen Null.', 'C) Sie verharren auf ihren OLS-Werten.', 'D) Sie wechseln zyklisch das Vorzeichen.'], correct:1, explanation:'Je größer Lambda wird, desto härter bestraft der Strafterm große Koeffizienten. Geht Lambda gegen Unendlich, werden alle Steigungskoeffizienten gegen Null gedrückt.'},
-    {id:'l3', difficulty:'hard', question:'In welcher Situation ist Ridge Regression der Lasso-Regression meistens überlegen?', options:['A) Wenn ein Großteil der Prädiktoren keinerlei Effekt auf Y hat.', 'B) Wenn viele Prädiktoren einen kleinen bis mittelgroßen Effekt haben und stark kollinear sind.', 'C) Wenn Rechenleistung knapp ist.', 'D) Ridge ist Lasso mathematisch in jeder Situation überlegen.'], correct:1, explanation:'Lasso zwingt Variablen radikal auf Null. Wenn die echten Effekte aber überall leicht verteilt sind und Kollinearität vorliegt, stabilisiert Ridge die Koeffizienten gemeinsam, ohne sie zu löschen.'}
-  ]
-};
-
-const TOPICS = [
-  {id:'intro',n:1,icon:'📖',label:'Einführung & Statistical Modeling',keys:'supervised vs unsupervised, prediction vs inference, parametric vs non-parametric, flexibility, interpretability',xp:80},
-  {id:'bias-var',n:2,icon:'⚖️',label:'Modellgüte & Bias-Varianz-Tradeoff',keys:'MSE, training error, test error, bias, variance, overfitting, underfitting, model complexity',xp:100},
-  {id:'classifiers',n:3,icon:'🧮',label:'Naive Bayes, KNN & Logistische Regression',keys:'Bayes theorem, naive Bayes, K-nearest neighbors, logistic regression, sigmoid, decision boundary',xp:120},
-  {id:'simple-lm',n:4,icon:'📈',label:'Einfache lineare Regression',keys:'OLS, least squares, slope, intercept, RSE, R-squared, t-statistic, p-value',xp:90},
-  {id:'multi-lm',n:5,icon:'📉',label:'Multiple lineare Regression',keys:'multiple predictors, F-statistic, collinearity, VIF, adjusted R-squared',xp:110},
-  {id:'qualitative',n:6,icon:'🏷️',label:'Qualitative Prädiktoren',keys:'dummy variables, one-hot encoding, reference category, contrast coding',xp:70},
-  {id:'polynomial',n:7,icon:'〰️',label:'Regression mit Polynomtermen',keys:'polynomial regression, quadratic, cubic terms, nonlinear relationships',xp:80},
-  {id:'interaction',n:8,icon:'🔗',label:'Regressions-Interaktionsterme',keys:'interaction terms, synergy, multiplicative model, hierarchical principle',xp:80},
-  {id:'problems',n:9,icon:'⚠️',label:'Potentielle Probleme',keys:'heteroscedasticity, non-linearity, outliers, high leverage, multicollinearity, residual plots',xp:100},
-  {id:'cv',n:10,icon:'🔄',label:'Resampling: Kreuzvalidierung',keys:'LOOCV, k-fold cross-validation, validation set, test error estimation',xp:110},
-  {id:'bootstrap',n:11,icon:'🔃',label:'Resampling: Bootstrap',keys:'bootstrap sampling, standard error, confidence intervals, resampling with replacement',xp:90},
-  {id:'highdim',n:12,icon:'🧊',label:'Hochdimensionale Datenstrukturen',keys:'curse of dimensionality, p >> n, sparsity, regularization, feature selection',xp:100},
-  {id:'lasso',n:13,icon:'✂️',label:'Lasso-Regression',keys:'L1 regularization, sparsity, lambda, ridge vs lasso, variable selection',xp:120},
-];
-
-/* ===================== LOCAL FLASHCARDS ENGINE ===================== */
-const CARDS_POOL = {
-  'intro': [
-    {front: 'Supervised Learning', back: 'Lernverfahren mit bekannten Zielwerten (Labels). Ziel ist die Schätzung der Funktion, die X auf Y abbildet.'},
-    {front: 'Unsupervised Learning', back: 'Lernverfahren ohne Zielvariable Y. Es werden Strukturen, Cluster oder Muster in den Prädiktoren X gesucht.'},
-    {front: 'Parametrischer Ansatz', back: 'Reduziert das Problem der Funktionsschätzung auf die Schätzung von Parametern (z.B. lineare Regressionskoeffizienten).'}
-  ],
-  'bias-var': [
-    {front: 'Bias (Verzerrung)', back: 'Der Fehler, der durch die Vereinfachung eines hochkomplexen realen Problems durch ein simpleres Modell entsteht.'},
-    {front: 'Varianz', back: 'Gibt an, wie stark sich die geschätzte Modellfunktion f_hat ändern würde, wenn sie mit einem anderen Trainingsdatensatz berechnet würde.'},
-    {front: 'Overfitting', back: 'Tritt auf, wenn das Modell das zufällige Rauschen der Trainingsdaten statt der wahren Struktur lernt. Führt zu kleinem Training-MSE und hohem Test-MSE.'}
-  ]
-};
-
-/* ===================== STATE ===================== */
-const ST = JSON.parse(localStorage.getItem('slp_state') || 'null') || {
-  xp:0, streak:0, lastDay:'', progress:{}, examScores:[]
-};
-function save(){localStorage.setItem('slp_state', JSON.stringify(ST))}
-
-function addXP(n){
-  ST.xp += n;
-  const today = new Date().toDateString();
-  if(ST.lastDay !== today){ ST.streak++; ST.lastDay = today; }
-  save(); updateStreakBadge();
-}
-function updateStreakBadge(){document.getElementById('streak-num').textContent = ST.streak}
-function topicProgress(id){ return ST.progress[id] || {score:0, attempts:0, mastered:false} }
-function setTopicProg(id, score){
-  const p = topicProgress(id);
-  p.attempts++;
-  p.score = Math.max(p.score, score);
-  p.mastered = p.score >= 80;
-  ST.progress[id] = p;
-  save(); renderSidebar();
-}
-
-/* ===================== PAGES ===================== */
-let currentPage = 'dashboard';
-let currentTopic = TOPICS[0];
-
-function goPage(p){
-  currentPage = p;
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  const nt = document.getElementById('nt-'+p);
-  if(nt) nt.classList.add('active');
-  render();
-}
-
-function render(){
-  if(currentPage==='dashboard') renderDashboard();
-  else if(currentPage==='learn') renderLearn();
-  else if(currentPage==='viz') renderViz();
-  else if(currentPage==='exam') renderExam();
-}
-
-function renderSidebar(){
-  const sb = document.getElementById('sb-topics');
-  if(!sb) return;
-  sb.innerHTML = TOPICS.map(t=>{
-    const p = topicProgress(t.id);
-    const dot = p.mastered ? 'done' : p.attempts>0 ? 'partial' : 'none';
-    return `<button class="sb-item${currentTopic.id===t.id?' active':''}" onclick="selectTopic('${t.id}')">
-      <span>${t.icon}</span>
-      <span style="flex:1;font-size:12px;line-height:1.35">${t.label}</span>
-      <span class="prog-dot ${dot}"></span>
-    </button>`;
-  }).join('');
-}
-
-function selectTopic(id){
-  currentTopic = TOPICS.find(t=>t.id===id);
-  renderSidebar();
-  if(currentPage==='dashboard') goPage('learn');
-  else render();
-}
-
-/* ===================== DASHBOARD ===================== */
-function renderDashboard(){
-  const main = document.getElementById('main');
-  const totalMastered = TOPICS.filter(t=>topicProgress(t.id).mastered).length;
-  const lvl = Math.floor(ST.xp/200)+1;
-  const xpInLevel = ST.xp % 200;
-  const avgScore = Object.values(ST.progress).length
-    ? Math.round(Object.values(ST.progress).reduce((s,p)=>s+p.score,0)/Object.values(ST.progress).length) : 0;
-
-  main.innerHTML = `
-  <div class="hero-banner">
-    <div class="hero-avatar">🎓</div>
-    <div style="flex:1">
-      <div class="hero-title">Willkommen zurück!</div>
-      <div class="hero-sub">Level ${lvl} · ${ST.xp} XP gesamt · Lokaler Lernmodus aktiv 🚀</div>
-      <div class="xp-bar-wrap">
-        <div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${xpInLevel/2}%"></div></div>
-        <div class="xp-label">${xpInLevel}/200 XP bis Level ${lvl+1}</div>
-      </div>
-    </div>
-    <div style="text-align:center">
-      <div style="font-size:36px;font-weight:800;color:var(--amber)">${ST.streak}</div>
-      <div style="font-size:12px;color:var(--text3)">Tage Streak 🔥</div>
-    </div>
-  </div>
-
-  <div class="dash-grid">
-    <div class="stat-card"><div class="stat-val text-purple">${totalMastered}/${TOPICS.length}</div><div class="stat-lbl">Themen gemeistert</div></div>
-    <div class="stat-card"><div class="stat-val text-green">${ST.xp}</div><div class="stat-lbl">XP verdient</div></div>
-    <div class="stat-card"><div class="stat-val text-amber">${avgScore || '–'}</div><div class="stat-lbl">Ø Score</div></div>
-    <div class="stat-card"><div class="stat-val text-purple">${ST.examScores.length}</div><div class="stat-lbl">Prüfungs-Runs</div></div>
-  </div>
-
-  <div style="margin-bottom:1.25rem">
-    <div class="section-title" style="font-size:17px;margin-bottom:1rem">Alle Kapitel</div>
-    <div class="topic-grid">
-      ${TOPICS.map(t=>{
-        const p = topicProgress(t.id);
-        return `<div class="topic-card${p.mastered?' completed':''}" onclick="selectTopic('${t.id}')">
-          ${p.mastered ? '<span class="badge-done">✓ Gemeistert</span>' : ''}
-          <div class="topic-icon">${t.icon}</div>
-          <div class="topic-name">${t.label}</div>
-          <div class="topic-meta">${t.xp} XP · ${p.attempts} Versuche</div>
-          <div class="topic-prog"><div class="topic-prog-fill${p.mastered?' done':''}" style="width:${p.score}%"></div></div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>`;
-}
-
-/* ===================== LEARN ===================== */
-let learnMode = 'quiz';
-let quizState = {q:null, answered:false, lastId:''};
-let fcCards = [], fcIdx = 0;
-
-function renderLearn(){
-  const main = document.getElementById('main');
-  const p = topicProgress(currentTopic.id);
-  main.innerHTML = `
-  <div class="section-hd">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem">
-      <span style="font-size:22px">${currentTopic.icon}</span>
-      <div class="section-title" style="font-size:18px;margin:0">${currentTopic.label}</div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <span class="pill pill-purple">Kapitel ${currentTopic.n}</span>
-      ${p.mastered ? '<span class="pill pill-green">✓ Gemeistert</span>' : ''}
-      ${p.attempts>0 ? `<span class="pill pill-amber">Bester Score: ${p.score}%</span>` : ''}
-    </div>
-  </div>
-  <div class="inner-tabs">
-    <button class="inner-tab${learnMode==='quiz'?' active':''}" onclick="setLearnMode('quiz')"><i class="ti ti-help-circle" aria-hidden="true"></i> Lokales Quiz</button>
-    <button class="inner-tab${learnMode==='flash'?' active':''}" onclick="setLearnMode('flash')"><i class="ti ti-cards" aria-hidden="true"></i> Karteikarten</button>
-    <button class="inner-tab${learnMode==='game'?' active':''}" onclick="setLearnMode('game')"><i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Lernspiel</button>
-    <button class="inner-tab${learnMode==='summary'?' active':''}" onclick="setLearnMode('summary')"><i class="ti ti-list" aria-hidden="true"></i> Zusammenfassung</button>
-  </div>
-  <div id="learn-body"></div>`;
-  renderLearnBody();
-}
-
-function setLearnMode(m){ learnMode=m; renderLearnBody(); }
-
-function renderLearnBody(){
-  const b = document.getElementById('learn-body');
-  if(learnMode==='quiz') renderQuizBody(b);
-  else if(learnMode==='flash') renderFlashBody(b);
-  else if(learnMode==='game') renderGameBody(b);
-  else renderSummaryBody(b);
-}
-
-function renderQuizBody(b){
-  b.innerHTML = `<div id="q-area"></div>
-  <div class="btn-row">
-    <button class="btn btn-primary" onclick="loadLocalQuestion()"><i class="ti ti-refresh" aria-hidden="true"></i> Nächste Frage</button>
-  </div>`;
-  loadLocalQuestion();
-}
-
-/* ===================== EXPLICITLY FIXED QUESTION SELECTION ===================== */
-function loadLocalQuestion(){
-  quizState.answered = false;
-  const qa = document.getElementById('q-area');
-  if(!qa) return;
-
-  // HIER WAR DER FEHLER: Greift jetzt garantiert präzise auf das Sub-Array des Kapitels zu!
-  const pool = QUESTION_POOL[currentTopic.id] || [];
-  
-  if(pool.length === 0){
-    qa.innerHTML = `<div class="empty"><i class="ti ti-info-circle" aria-hidden="true"></i><p>Für dieses Kapitel stehen im interaktiven Modus die Karteikarten, Visualisierungen und die Prüfungssimulation bereit.</p></div>`;
-    return;
-  }
-
-  // Verhindert direkt aufeinanderfolgende Dubletten, falls mehr als 1 Frage existiert
-  let validQuestions = pool;
-  if(pool.length > 1){
-    validQuestions = pool.filter(q => q.id !== quizState.lastId);
-  }
-  
-  const randQ = validQuestions[Math.floor(Math.random() * validQuestions.length)];
-  quizState.q = randQ;
-  quizState.lastId = randQ.id;
-  
-  const dCls = randQ.difficulty==='easy'?'pill-green':randQ.difficulty=='hard'?'pill-red':'pill-amber';
-  const dLbl = randQ.difficulty==='easy'?'Leicht':randQ.difficulty=='hard'?'Schwer':'Mittel';
-
-  qa.innerHTML = `
-  <div class="card">
-    <div class="q-meta"><span class="pill ${dCls}">${dLbl}</span></div>
-    <div class="q-text">${randQ.question}</div>
-    <div class="opts">
-      ${randQ.options.map((o,i)=>`<button class="opt" id="qo${i}" onclick="answerQ(${i})">${o}</button>`).join('')}
-    </div>
-    <div class="explanation" id="qexp"><strong>💡 Erklärung:</strong> ${randQ.explanation}</div>
-  </div>`;
-}
-
-function answerQ(idx){
-  if(quizState.answered) return;
-  quizState.answered = true;
-  const q = quizState.q;
-  const correct = idx === q.correct;
-  
-  q.options.forEach((_,i)=>{
-    const b = document.getElementById('qo'+i);
-    if(b){
-      b.disabled = true;
-      if(i===q.correct) b.classList.add(correct||i!==idx?'correct':'show-correct');
-      else if(i===idx) b.classList.add('wrong');
-    }
-  });
-  
-  document.getElementById('qexp').classList.add('show');
-  setTopicProg(currentTopic.id, correct ? 100 : 0);
-  addXP(correct ? 20 : 5);
-}
-
-function renderFlashBody(b){
-  let cards = CARDS_POOL[currentTopic.id];
-  if(!cards){
-    const splitted = currentTopic.keys.split(', ');
-    cards = splitted.map(k => ({
-      front: k.charAt(0).toUpperCase() + k.slice(1),
-      back: `Zentrales Konzept aus Kapitel ${currentTopic.n} (${currentTopic.label}). Schlage dieses im ISLP-Lehrbuch für tiefergehende statistische Herleitungen nach.`
-    }));
-  }
-
-  fcCards = cards;
-  if(fcIdx >= fcCards.length) fcIdx = 0;
-
-  const card = fcCards[fcIdx];
-  b.innerHTML = `
-  <div style="font-size:13px;color:var(--text3);margin-bottom:.75rem;text-align:center">${fcIdx+1} / ${fcCards.length}</div>
-  <div class="fc-scene" onclick="flipFC()">
-    <div class="fc-card" id="fc-inner">
-      <div class="fc-face fc-front"><div class="fc-label">Konzept / Fachbegriff</div><div class="fc-text">${card.front}</div><div style="font-size:11px;color:var(--text3);margin-top:1rem">Klicken zum Wenden</div></div>
-      <div class="fc-face fc-back"><div class="fc-label">Definition & Bedeutung</div><div class="fc-text">${card.back}</div></div>
-    </div>
-  </div>
-  <div class="btn-row" style="justify-content:center;margin-top:1rem">
-    <button class="btn btn-green btn-sm" onclick="rateFlashcard()">😊 Gewusst (+5 XP)</button>
-    <button class="btn btn-sm" onclick="fcNav(1)">🤔 Später noch einmal</button>
-  </div>
-  <div class="btn-row" style="justify-content:center;margin-top:1.25rem">
-    <button class="btn" onclick="fcNav(-1)" ${fcIdx===0?'disabled':''}><i class="ti ti-arrow-left" aria-hidden="true"></i> Zurück</button>
-    <button class="btn btn-primary" onclick="fcNav(1)" ${fcIdx===fcCards.length-1?'disabled':''}><i class="ti ti-arrow-right" aria-hidden="true"></i> Weiter</button>
-  </div>`;
-}
-
-function flipFC(){const fc=document.getElementById('fc-inner');if(fc)fc.classList.toggle('flipped')}
-function rateFlashcard(){ addXP(5); fcNav(1); }
-function fcNav(d){
-  fcIdx=Math.max(0,Math.min(fcCards.length-1,fcIdx+d));
-  renderLearnBody();
-}
-
-function renderGameBody(b){
-  if(currentTopic.id==='bias-var'){
-    b.innerHTML = `
-    <div class="card">
-      <h3 style="margin-bottom:1rem">🎯 Bias-Variance Minigame</h3>
-      <p style="margin-bottom:1rem;color:var(--text2)">Bewege den Regler, um die Komplexität so einzustellen, dass der resultierende Test-MSE minimiert wird.</p>
-      <div class="slider-row" style="margin:1.5rem 0">
-        <input type="range" min="1" max="20" value="5" id="game-complexity" oninput="updateBiasGame()">
-        <span class="val-badge" id="game-c-val">5</span>
-      </div>
-      <div class="stat-card" style="margin-bottom:1rem">
-        <div class="stat-val text-purple" id="game-mse">1.50</div>
-        <div class="stat-lbl">Berechneter Test-MSE</div>
-      </div>
-      <button class="btn btn-primary" onclick="submitBiasGame()">Konfiguration prüfen</button>
-      <div id="game-feedback" style="margin-top:1rem"></div>
-    </div>`;
-    setTimeout(updateBiasGame,20);
-    return;
-  }
-
-  if(currentTopic.id==='qualitative'){
-    b.innerHTML = `
-    <div class="card">
-      <h3 style="margin-bottom:1rem">Dummy-Variablen Codierung</h3>
-      <p style="color:var(--text2);margin-bottom:1rem">Ein qualitatives Merkmal besitzt genau <strong>4 distinkte Ausprägungen</strong> (z.B. Frühling, Sommer, Herbst, Winter). Wie viele Dummy-Variablen musst du in das Modell aufnehmen?</p>
-      <input id="dummy-answer" type="number" min="0" max="10" style="padding:10px;border-radius:8px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);width:100px">
-      <button class="btn btn-primary" style="margin-left:10px" onclick="checkDummyGame()">Prüfen</button>
-      <div id="dummy-feedback" style="margin-top:1rem"></div>
-    </div>`;
-    return;
-  }
-
-  b.innerHTML = `
-  <div class="card">
-    <h3 style="margin-bottom:1rem">📊 Live Sandbox</h3>
-    <p style="color:var(--text2)">Nutze das Tab <strong>"Visualisierungen"</strong> im oberen Menü, um mathematische Zusammenhänge interaktiv durch Schieberegler direkt im Browser zu explorieren.</p>
-  </div>`;
-}
-
-function updateBiasGame(){
-  const c = parseInt(document.getElementById('game-complexity').value);
-  document.getElementById('game-c-val').textContent = c;
-  const bias2 = Math.max(0.05, 2.5-0.13*c+0.002*c*c);
-  const variance = 0.05+0.008*c+0.012*c*c;
-  const mse = bias2+variance+0.1;
-  document.getElementById('game-mse').textContent = mse.toFixed(2);
-}
-
-function submitBiasGame(){
-  const c = parseInt(document.getElementById('game-complexity').value);
-  const fb = document.getElementById('game-feedback');
-  if(c >= 7 && c <= 9){
-    addXP(30);
-    fb.innerHTML = '<span class="text-green">✓ Optimal! Du hast den perfekten Tradeoff-Punkt getroffen (+30 XP).</span>';
-  } else if(c < 7){
-    fb.innerHTML = '<span class="text-amber">Underfitting! Erhöhe die Modellkomplexität, um den hohen Bias zu verringern.</span>';
-  } else {
-    fb.innerHTML = '<span class="text-red">Overfitting! Reduziere die Flexibilität, da die Varianz sonst explodiert.</span>';
-  }
-}
-
-function checkDummyGame(){
-  const val = parseInt(document.getElementById('dummy-answer').value);
-  const fb = document.getElementById('dummy-feedback');
-  if(val===3){
-    addXP(20);
-    fb.innerHTML = '<span class="text-green">✓ Korrekt! Nach dem Prinzip k-1 benötigt man für 4 Gruppen genau 3 Dummies.</span>';
-  }else{
-    fb.innerHTML = '<span class="text-red">✗ Falsch. Überlege, wie viele Freiheitsgrade nach Abzug der Referenzkategorie bleiben.</span>';
-  }
-}
-
-function renderSummaryBody(b){
-  b.innerHTML = `
-  <div class="card" style="line-height:1.7">
-    <h3 style="margin-bottom:0.75rem; color:var(--purple-l)">Kapitel-Zusammenfassung</h3>
-    <p style="color:var(--text2); margin-bottom:1rem">Dieser Lernbereich behandelt die theoretischen Fundamente aus <em>Introduction to Statistical Learning (ISLP)</em>.</p>
-    <h4 style="margin:1rem 0 0.5rem; font-size:14px">Wichtige Schlagworte für die Klausurvorbereitung:</h4>
-    <div style="display:flex; gap:6px; flex-wrap:wrap">
-      ${currentTopic.keys.split(', ').map(k=>`<span class="chip">${k}</span>`).join('')}
-    </div>
-  </div>`;
-}
-
-/* ===================== INTERACTIVE VISUALIZATIONS ===================== */
-let vizMode = 'biasvar';
-let bvChart = null, lassChart = null, cvChart = null, logitChart = null;
-
-function renderViz(){
-  const main = document.getElementById('main');
-  main.innerHTML = `
-  <div class="section-hd"><div class="section-title">Interaktive Visualisierungen</div><div class="section-sub">Parameter ändern und mathematische Auswirkungen in Echtzeit beobachten</div></div>
-  <div class="inner-tabs">
-    <button class="inner-tab${vizMode==='biasvar'?' active':''}" onclick="setVizMode('biasvar')">Bias-Varianz</button>
-    <button class="inner-tab${vizMode==='lasso'?' active':''}" onclick="setVizMode('lasso')">Lasso Shrinkage</button>
-    <button class="inner-tab${vizMode==='cv'?' active':''}" onclick="setVizMode('cv')">Kreuzvalidierung</button>
-    <button class="inner-tab${vizMode==='logit'?' active':''}" onclick="setVizMode('logit')">Logistische Fkt.</button>
-  </div>
-  <div id="viz-body"></div>`;
-  renderVizBody();
-}
-
-function setVizMode(m){
-  vizMode=m;
-  if(bvChart){bvChart.destroy();bvChart=null}
-  if(lassChart){lassChart.destroy();lassChart=null}
-  if(cvChart){cvChart.destroy();cvChart=null}
-  if(logitChart){logitChart.destroy();logitChart=null}
-  renderVizBody();
-}
-
-function renderVizBody(){
-  const b = document.getElementById('viz-body');
-  if(!b) return;
-  if(vizMode==='biasvar') renderBiasVar(b);
-  else if(vizMode==='lasso') renderLassoViz(b);
-  else if(vizMode==='cv') renderCVViz(b);
-  else renderLogitViz(b);
-}
-
-function renderBiasVar(b){
-  b.innerHTML = `
-  <div class="card">
-    <div class="viz-controls">
-      <span class="viz-label">Komplexität</span>
-      <div class="slider-row"><input type="range" min="1" max="20" value="5" id="sl-complexity" oninput="updateBV()"><span class="val-badge" id="vb-c">5</span></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1rem">
-      <div class="stat-card"><div class="stat-val text-red" id="bv-bias">–</div><div class="stat-lbl">Bias²</div></div>
-      <div class="stat-card"><div class="stat-val text-blue" id="bv-var">–</div><div class="stat-lbl">Varianz</div></div>
-      <div class="stat-card"><div class="stat-val text-purple" id="bv-mse">–</div><div class="stat-lbl">Test-MSE</div></div>
-    </div>
-    <canvas id="bv-chart" height="220"></canvas>
-  </div>`;
-  initBVChart();
-}
-
-function initBVChart(){
-  const ctx = document.getElementById('bv-chart');
-  if(!ctx) return;
-  const labels = Array.from({length:20},(_,i)=>'k='+(i+1));
-  const bias2 = Array.from({length:20},(_,i)=>Math.max(0.05, 2.5-0.13*(i+1)+0.002*(i+1)*(i+1)));
-  const variance = Array.from({length:20},(_,i)=>0.05+0.008*(i+1)+0.012*(i+1)*(i+1));
-  const mse = bias2.map((b,i)=>b+variance[i]+0.1);
-  bvChart = new Chart(ctx,{
-    type:'line',
-    data:{labels,datasets:[
-      {label:'Bias²',data:bias2,borderColor:'#F87171',backgroundColor:'transparent',tension:.4},
-      {label:'Varianz',data:variance,borderColor:'#60A5FA',backgroundColor:'transparent',tension:.4},
-      {label:'Test-MSE',data:mse,borderColor:'#A89AF5',tension:.4,borderWidth:3}
-    ]},
-    options:{responsive:true,scales:{x:{grid:{color:'rgba(255,255,255,.05)'}},y:{grid:{color:'rgba(255,255,255,.05)'}}}}
-  });
-  updateBV();
-}
-
-function updateBV(){
-  const s = document.getElementById('sl-complexity');
-  if(!s) return;
-  const c = parseInt(s.value);
-  document.getElementById('vb-c').textContent = c;
-  const bias2 = Math.max(0.05, 2.5-0.13*c+0.002*c*c);
-  const variance = 0.05+0.008*c+0.012*c*c;
-  const mse = bias2+variance+0.1;
-  document.getElementById('bv-bias').textContent = bias2.toFixed(2);
-  document.getElementById('bv-var').textContent = variance.toFixed(2);
-  document.getElementById('bv-mse').textContent = mse.toFixed(2);
-}
-
-function renderLassoViz(b){
-  b.innerHTML = `
-  <div class="card">
-    <div class="viz-controls">
-      <span class="viz-label">Lambda (λ)</span>
-      <div class="slider-row"><input type="range" min="0" max="100" value="20" id="sl-lambda" oninput="updateLasso()"><span class="val-badge" id="vb-l">0.20</span></div>
-    </div>
-    <canvas id="lasso-chart" height="240"></canvas>
-    <div id="lasso-info" style="margin-top:.75rem;font-size:13px;color:var(--text2);text-align:center"></div>
-  </div>`;
-  initLassoChart();
-}
-
-function initLassoChart(){
-  const ctx = document.getElementById('lasso-chart');
-  if(!ctx) return;
-  const lams = Array.from({length:50},(_,i)=>i*2);
-  const coefs = [
-    {label:'β₁ (Wichtig)',color:'#7C6FED',init:2.5},
-    {label:'β₂ (Mittel)',color:'#36D399',init:1.2},
-    {label:'β₃ (Klein)',color:'#FBBF24',init:0.6}
-  ];
-  lassChart = new Chart(ctx,{
-    type:'line',
-    data:{labels:lams.map(l=>(l/100).toFixed(2)),datasets:coefs.map(c=>({
-      label:c.label,borderColor:c.color,data:lams.map(l=>Math.max(0,c.init-l/100*c.init*1.25)),tension:.2,fill:false
-    }))},
-    options:{responsive:true}
-  });
-  updateLasso();
-}
-
-function updateLasso(){
-  const s = document.getElementById('sl-lambda');
-  if(!s) return;
-  const lv = parseInt(s.value);
-  document.getElementById('vb-l').textContent = (lv/100).toFixed(2);
-  const vals = [2.5, 1.2, 0.6].map(v=>Math.max(0,v-lv/100*v*1.25));
-  const zeroed = vals.filter(v=>v===0).length;
-  document.getElementById('lasso-info').textContent = `Bei λ=${(lv/100).toFixed(2)} sind bereits ${zeroed} Koeffizienten exakt Null (Feature Selection).`;
-}
-
-function renderCVViz(b){
-  b.innerHTML = `
-  <div class="card">
-    <div class="viz-controls">
-      <span class="viz-label">k-Folds</span>
-      <div class="slider-row"><input type="range" min="2" max="20" value="5" id="sl-k" oninput="updateCV()"><span class="val-badge" id="vb-k">5</span></div>
-    </div>
-    <canvas id="cv-chart" height="220"></canvas>
-  </div>`;
-  initCVChart();
-}
-
-function initCVChart(){
-  const ctx = document.getElementById('cv-chart');
-  if(!ctx) return;
-  cvChart = new Chart(ctx,{type:'bar',data:{labels:Array.from({length:20},(_,i)=>'S'+(i+1)),datasets:[
-    {label:'Training Set',data:Array(20).fill(1),backgroundColor:'#3D3580'},
-    {label:'Validation Set',data:Array(20).fill(0),backgroundColor:'#36D399'}
-  ]},options:{responsive:true,scales:{x:{stacked:true},y:{display:false,stacked:true}}}});
-  updateCV();
-}
-
-function updateCV(){
-  const s = document.getElementById('sl-k');
-  if(!s) return;
-  const k = parseInt(s.value);
-  document.getElementById('vb-k').textContent = k;
-  const trainData = Array(20).fill(1);
-  const valData = Array(20).fill(0);
-  const size = Math.max(1, Math.round(20/k));
-  for(let i=0;i<size;i++){valData[i]=1;trainData[i]=0;}
-  if(cvChart){
-    cvChart.data.datasets[0].data = trainData;
-    cvChart.data.datasets[1].data = valData;
-    cvChart.update('none');
-  }
-}
-
-function renderLogitViz(b){
-  b.innerHTML = `
-  <div class="card">
-    <div class="viz-controls">
-      <span class="viz-label">Steigung (β₁)</span>
-      <div class="slider-row"><input type="range" min="-30" max="30" value="10" id="sl-b1" oninput="updateLogit()"><span class="val-badge" id="vb-b1">1.0</span></div>
-    </div>
-    <canvas id="logit-chart" height="220"></canvas>
-  </div>`;
-  initLogitChart();
-}
-
-function initLogitChart(){
-  const ctx = document.getElementById('logit-chart');
-  if(!ctx) return;
-  const xs = Array.from({length:60},(_,i)=>-3+i*0.1);
-  logitChart = new Chart(ctx,{type:'line',data:{labels:xs.map(x=>x.toFixed(1)),datasets:[{label:'p(X)',data:xs.map(x=>1/(1+Math.exp(-x))),borderColor:'#7C6FED',tension:.3}]},options:{responsive:true}});
-  updateLogit();
-}
-
-function updateLogit(){
-  const s = document.getElementById('sl-b1');
-  if(!s) return;
-  const b1 = parseInt(s.value)/10;
-  document.getElementById('vb-b1').textContent = b1.toFixed(1);
-  const xs = Array.from({length:60},(_,i)=>-3+i*0.1);
-  const ys = xs.map(x=>1/(1+Math.exp(-(b1*x))));
-  if(logitChart){logitChart.data.datasets[0].data = ys; logitChart.update('none');}
-}
-
-/* ===================== OFFLINE EXAM SIMULATION ===================== */
-let examState = {phase:'setup',qs:[],current:0,answers:[],timeLeft:0,timer:null,n:5};
-
-function renderExam(){
-  const main = document.getElementById('main');
-  if(!main) return;
-  if(examState.phase==='setup') renderExamSetup(main);
-  else if(examState.phase==='running') renderExamRunning(main);
-  else renderExamResult(main);
-}
-
-function renderExamSetup(main){
-  main.innerHTML = `
-  <div class="section-hd"><div class="section-title">Prüfungssimulation</div><div class="section-sub">Generiert eine Testklausur aus allen mathematischen Kapiteln</div></div>
-  <div class="card" style="max-width:480px">
-    <div style="margin-bottom:1.25rem">
-      <div style="font-size:14px;font-weight:500;margin-bottom:8px;color:var(--text2)">Anzahl der Fragen wählen</div>
-      <div style="display:flex;gap:8px">
-        ${[3,5,10].map(n=>`<button class="btn${examState.n===n?' btn-primary':''} btn-sm" onclick="setExamN(${n})">${n} Fragen</button>`).join('')}
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;padding:1rem;background:var(--bg3);border-radius:var(--rs);margin-bottom:1.5rem">
-      <i class="ti ti-clock" style="font-size:24px;color:var(--amber)" aria-hidden="true"></i>
-      <div>
-        <div style="font-size:14px;font-weight:500">${examState.n * 2} Minuten</div>
-        <div style="font-size:12px;color:var(--text3)">Echtzeit-Countdown aktiv</div>
-      </div>
-    </div>
-    <button class="btn btn-primary" style="width:100%" onclick="startExam()"><i class="ti ti-player-play" aria-hidden="true"></i> Simulation starten</button>
-  </div>`;
-}
-
-function setExamN(n){ examState.n=n; renderExam(); }
-
-function startExam(){
-  let pool = [];
-  Object.keys(QUESTION_POOL).forEach(k=> { pool = pool.concat(QUESTION_POOL[k]); });
-  
-  const shuffled = [...pool].sort(()=>Math.random() - 0.5);
-  examState.qs = shuffled.slice(0, Math.min(examState.n, shuffled.length));
-  
-  examState.phase = 'running';
-  examState.current = 0;
-  examState.answers = [];
-  examState.timeLeft = examState.qs.length * 120;
-  
-  renderExam();
-  if(examState.timer) clearInterval(examState.timer);
-  examState.timer = setInterval(()=>{
-    examState.timeLeft--;
-    const el = document.getElementById('exam-timer');
-    if(el){
-      const m=Math.floor(examState.timeLeft/60), s=examState.timeLeft%60;
-      el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
-    }
-    if(examState.timeLeft<=0){ finishExam(); }
-  },1000);
-}
-
-function renderExamRunning(main){
-  const q = examState.qs[examState.current];
-  const total = examState.qs.length;
-  const m=Math.floor(examState.timeLeft/60), s=examState.timeLeft%60;
-  main.innerHTML = `
-  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem">
-    <div class="progress-ring-wrap" style="flex:1;margin:0">
-      <span class="q-counter">${examState.current+1}/${total}</span>
-      <div class="prog-bar"><div class="prog-fill" style="width:${(examState.current/total)*100}%"></div></div>
-    </div>
-    <div class="timer" id="exam-timer">${m}:${s.toString().padStart(2,'0')}</div>
-  </div>
-  <div class="card">
-    <div class="q-text">${q.question}</div>
-    <div class="opts">
-      ${q.options.map((o,i)=>`<button class="opt" id="eo${i}" onclick="examAnswer(${i})">${o}</button>`).join('')}
-    </div>
-  </div>`;
-}
-
-function examAnswer(idx){
-  examState.answers.push({chosen:idx, correct:examState.qs[examState.current].correct});
-  examState.current++;
-  if(examState.current >= examState.qs.length) finishExam();
-  else renderExam();
-}
-
-function finishExam(){
-  if(examState.timer) clearInterval(examState.timer);
-  examState.phase = 'result';
-  const correct = examState.answers.filter(a=>a.chosen===a.correct).length;
-  const pct = Math.round((correct/examState.qs.length)*100);
-  ST.examScores.push({correct, total:examState.qs.length, pct});
-  addXP(pct);
-  renderExam();
-}
-
-function renderExamResult(main){
-  const last = ST.examScores[ST.examScores.length-1];
-  main.innerHTML = `
-  <div class="result-center">
-    <div class="result-ring">${last.pct}%</div>
-    <div style="font-size:22px;font-weight:700;margin-bottom:8px">Ergebnis ausgewertet</div>
-    <div style="font-size:15px;color:var(--text2);margin-bottom:1.5rem">${last.correct} von ${last.total} richtig gelöst.</div>
-    <button class="btn btn-primary" onclick="examState.phase='setup';renderExam()">Erneut versuchen</button>
-  </div>`;
-}
-
-/* ===================== INIT ===================== */
-updateStreakBadge();
-renderSidebar();
-render();
-</script>
-</body>
-</html>
+  flashcards: [
+    { t: 't1', q: "Was unterscheidet Supervised von Unsupervised Learning?", a: "Supervised hat eine Zielvariable Y (Labels), Unsupervised sucht nur nach Strukturen in den Features X (z.B. Clustering, PCA)." },
+    { t: 't2', q: "Was ist der Irreducible Error?", a: "Var(ε). Die immanente Streuung des Fehlers in der Natur. Die harte Untergrenze für den Test-MSE, die nie unterschritten werden kann." },
+    { t: 't3', q: "Wieso eignet sich lineare Regression oft nicht für Klassifikation?", a: "Sie kann Werte >1 oder <0 ausgeben, die als Wahrscheinlichkeiten sinnlos sind. Bei k>2 maskiert eine numerische (1,2,3) Codierung die Abstände zwischen Kategorien (Dummy Variable Trap ignorierend)." },
+    { t: 't4', q: "Was gibt der RSE (Residual Standard Error) an?", a: "Er schätzt die Standardabweichung des Fehlerterms ε. Er gibt grob an, um wie viel die Vorhersage im Schnitt vom wahren Wert abweicht (absolutes Maß)." },
+    { t: 't5', q: "Wie interpretiert man β_j in der Multiplen Lin. Reg.?", a: "Als die durchschnittliche Änderung in Y bei Erhöhung von X_j um eine Einheit, VORAUSGESETZT alle anderen Prädiktoren bleiben konstant (ceteris paribus)." },
+    { t: 't6', q: "Wie codiert man eine kategoriale Variable mit 4 Levels?", a: "Mit ex
