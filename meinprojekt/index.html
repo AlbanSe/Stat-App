@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StatLearn Pro (Offline-Edition)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0B0D17;--bg2:#12152A;--bg3:#1A1F38;--bg4:#222847;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#E8EBF8;--text2:#8B91B5;--text3:#555A7A;
+  --purple:#7C6FED;--purple-l:#A89AF5;--purple-d:#3D3580;
+  --green:#36D399;--green-l:#6EE7B7;--green-d:#0D5C3F;
+  --amber:#FBBF24;--amber-l:#FDE68A;--amber-d:#78350F;
+  --red:#F87171;--red-d:#7F1D1D;
+  --blue:#60A5FA;--pink:#F472B6;--teal:#2DD4BF;
+  --r:12px;--rs:8px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+button{font-family:'Inter',sans-serif;cursor:pointer}
+input,textarea{font-family:'Inter',sans-serif}
+
+/* NAV */
+.nav{height:56px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.5rem;gap:1rem;position:sticky;top:0;z-index:200}
+.logo{font-weight:800;font-size:18px;background:linear-gradient(135deg,var(--purple-l),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-tabs{display:flex;gap:4px;margin-left:auto}
+.nav-tab{padding:6px 14px;border-radius:20px;border:none;background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px}
+.nav-tab:hover{background:var(--bg3);color:var(--text)}
+.nav-tab.active{background:var(--purple);color:#fff}
+.streak-badge{display:flex;align-items:center;gap:5px;background:var(--amber-d);border:1px solid var(--amber);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--amber-l)}
+
+/* LAYOUT */
+.layout{display:flex;min-height:calc(100vh - 56px)}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);padding:1.25rem 0.75rem;flex-shrink:0;overflow-y:auto}
+.main-area{flex:1;overflow-y:auto;padding:1.5rem}
+
+/* SIDEBAR */
+.sb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:0 8px;margin:1rem 0 6px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rs);color:var(--text2);font-size:13px;cursor:pointer;transition:.15s;border:none;background:none;width:100%;text-align:left}
+.sb-item:hover{background:var(--bg3);color:var(--text)}
+.sb-item.active{background:rgba(124,111,237,0.2);color:var(--purple-l)}
+.sb-item .prog-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-left:auto}
+.sb-item .prog-dot.done{background:var(--green)}
+.sb-item .prog-dot.partial{background:var(--amber)}
+.sb-item .prog-dot.none{background:var(--border2)}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem}
+
+/* DASHBOARD */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.5rem}
+.stat-card{background:var(--bg3);border-radius:var(--r);padding:1.25rem;text-align:center}
+.stat-val{font-size:32px;font-weight:800;line-height:1}
+.stat-lbl{font-size:12px;color:var(--text2);margin-top:6px}
+.hero-banner{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem}
+.hero-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.hero-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.hero-sub{font-size:14px;color:var(--text2)}
+.xp-bar-wrap{margin-top:10px}
+.xp-bar-bg{height:8px;background:var(--bg4);border-radius:4px}
+.xp-bar-fill{height:8px;background:linear-gradient(90deg,var(--purple),var(--purple-l));border-radius:4px;transition:.5s}
+.xp-label{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* TOPICS */
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.topic-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.topic-card:hover{border-color:var(--purple);transform:translateY(-2px)}
+.topic-card.completed{border-color:var(--green-d)}
+.topic-icon{font-size:22px;margin-bottom:10px}
+.topic-name{font-size:13px;font-weight:600;margin-bottom:4px;line-height:1.4}
+.topic-meta{font-size:11px;color:var(--text3)}
+.topic-prog{height:3px;background:var(--bg4);border-radius:2px;margin-top:10px}
+.topic-prog-fill{height:3px;border-radius:2px;background:var(--purple)}
+.topic-prog-fill.done{background:var(--green)}
+.badge-done{position:absolute;top:10px;right:10px;background:var(--green-d);color:var(--green-l);font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px}
+
+/* QUIZ */
+.q-meta{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.pill{font-size:11px;font-weight:600;border-radius:20px;padding:3px 10px}
+.pill-purple{background:rgba(124,111,237,.2);color:var(--purple-l)}
+.pill-green{background:rgba(54,211,153,.15);color:var(--green)}
+.pill-amber{background:rgba(251,191,36,.15);color:var(--amber)}
+.pill-red{background:rgba(248,113,113,.15);color:var(--red)}
+.q-text{font-size:17px;line-height:1.65;margin-bottom:1.25rem;font-weight:500}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{padding:13px 16px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:14px;cursor:pointer;transition:.15s;text-align:left;line-height:1.5}
+.opt:hover:not(:disabled){border-color:var(--purple);background:rgba(124,111,237,.1)}
+.opt.correct{border-color:var(--green);background:rgba(54,211,153,.12);color:var(--green-l)}
+.opt.wrong{border-color:var(--red);background:rgba(248,113,113,.1);color:var(--red)}
+.opt.show-correct{border-color:var(--green);background:rgba(54,211,153,.07)}
+.opt:disabled{cursor:default}
+.explanation{margin-top:1rem;padding:1rem;border-radius:var(--rs);background:var(--bg3);border-left:3px solid var(--purple);font-size:14px;line-height:1.7;color:var(--text2);display:none}
+.explanation.show{display:block}
+
+/* TIMER */
+.timer{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--text)}
+.timer.warning{color:var(--amber)}
+.timer.danger{color:var(--red)}
+.progress-ring-wrap{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
+.prog-bar{flex:1;height:6px;background:var(--bg4);border-radius:3px}
+.prog-fill{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--purple),var(--teal));transition:.3s}
+
+/* VIZ */
+canvas{max-width:100%;border-radius:var(--rs)}
+.viz-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:1rem}
+.viz-label{font-size:13px;color:var(--text2);min-width:80px}
+.slider-row{display:flex;align-items:center;gap:10px;flex:1}
+input[type=range]{-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bg4);outline:none;flex:1}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--purple);cursor:pointer}
+.val-badge{font-size:13px;font-weight:600;color:var(--purple-l);min-width:40px;text-align:right}
+
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:var(--border2);background:var(--bg4)}
+.btn-primary{background:var(--purple);border-color:var(--purple);color:#fff}
+.btn-primary:hover{opacity:.88}
+.btn-green{background:var(--green-d);border-color:var(--green);color:var(--green-l)}
+.btn-sm{padding:7px 14px;font-size:13px}
+.btn-row{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap}
+
+/* RESULTS */
+.result-ring{width:120px;height:120px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:32px;font-weight:800;border:6px solid var(--green);margin:0 auto 1rem}
+.result-center{text-align:center;padding:2rem}
+
+/* SECTION */
+.section-hd{margin-bottom:1.25rem}
+.section-title{font-size:22px;font-weight:800;margin-bottom:4px}
+.section-sub{font-size:14px;color:var(--text2)}
+
+/* FLASHCARD */
+.fc-scene{perspective:1200px;height:220px;cursor:pointer}
+.fc-card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:.55s}
+.fc-card.flipped{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;border:1px solid var(--border)}
+.fc-front{background:var(--bg2)}
+.fc-back{background:var(--bg3);border-color:var(--purple-d);transform:rotateY(180deg)}
+.fc-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:12px}
+.fc-text{font-size:15px;line-height:1.6;color:var(--text)}
+
+/* TABS */
+.inner-tabs{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
+.inner-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:.15s}
+.inner-tab:hover{background:var(--bg3);color:var(--text)}
+.inner-tab.active{background:var(--purple);border-color:var(--purple);color:#fff}
+
+.q-counter{font-size:13px;color:var(--text2);margin-bottom:.5rem}
+.text-green{color:var(--green)}
+.text-amber{color:var(--amber)}
+.text-red{color:var(--red)}
+.text-purple{color:var(--purple-l)}
+.chip{background:var(--bg3);padding:4px 10px;border-radius:6px;font-size:12px;color:var(--text2);border:1px solid var(--border)}
+@media(max-width:680px){.sidebar{display:none}.layout{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <span class="logo">StatLearn Pro</span>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goPage('dashboard')" id="nt-dashboard"><i class="ti ti-home" aria-hidden="true"></i> Dashboard</button>
+    <button class="nav-tab" onclick="goPage('learn')" id="nt-learn"><i class="ti ti-book" aria-hidden="true"></i> Lernen</button>
+    <button class="nav-tab" onclick="goPage('viz')" id="nt-viz"><i class="ti ti-chart-line" aria-hidden="true"></i> Visualisierungen</button>
+    <button class="nav-tab" onclick="goPage('exam')" id="nt-exam"><i class="ti ti-certificate" aria-hidden="true"></i> Prüfung</button>
+  </div>
+  <div class="streak-badge" style="margin-left:.75rem"><i class="ti ti-flame" aria-hidden="true"></i><span id="streak-num">0</span></div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sb-label">Kapitel</div>
+    <div id="sb-topics"></div>
+  </div>
+  <div class="main-area" id="main"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+/* ===================== STATIC QUESTIONS DATA POOL ===================== */
+const QUESTION_POOL = {
+  'intro': [
+    {difficulty:'easy', question:'Was ist der Hauptunterschied zwischen Supervised und Unsupervised Learning?', options:['A) Supervised Learning benötigt gelabelte Zielvariablen (Targets).', 'B) Unsupervised Learning nutzt lineare Modelle.', 'C) Supervised Learning ist immer ungenauer.', 'D) Es gibt keinen Unterschied.'], correct:0, explanation:'Beim Supervised Learning gibt es eine klare Zielvariable Y, die das Modell vorherzusagen versucht. Unsupervised Learning sucht stattdessen nach Mustern in Daten ohne Targets.'},
+    {difficulty:'medium', question:'In welchem Fall liegt primär ein "Inference"-Problem vor?', options:['A) Die exakte Vorhersage des morgigen Aktienkurses.', 'B) Das Verständnis, wie sich Werbebudgets auf den Umsatz auswirken.', 'C) Die automatisierte Erkennung von Katzen auf Bildern.', 'D) Das Berechnen von Notendurchschnitten.'], correct:1, explanation:'Bei der Inference (Inferenz) steht das Verständnis der Beziehung zwischen Prädiktoren und der Zielvariable im Vordergrund, nicht die reine Black-Box-Vorhersage.'},
+    {difficulty:'hard', question:'Welche Eigenschaft trifft im Regelfall auf ein hochgradig parametrisches Modell zu?', options:['A) Es besitzt eine geringe Flexibilität und neigt zu hohem Bias.', 'B) Es benötigt keine Annahmen über die funktionale Form.', 'C) Es ist hochflexibel, neigt aber schnell zu Overfitting.', 'D) Es ist immer leichter zu interpretieren als ein nicht-parametrisches Modell.'], correct:2, explanation:'Parametrische Modelle mit sehr vielen Parametern passen sich stark an die Trainingsdaten an. Sie erhöhen die Flexibilität, bergen jedoch ein großes Overfitting-Risiko.'}
+  ],
+  'bias-var': [
+    {difficulty:'easy', question:'Was passiert beim Overfitting mit dem Training Error und dem Test Error?', options:['A) Beide Fehler sinken gleichermaßen.', 'B) Der Training Error sinkt, aber der Test Error steigt.', 'C) Der Training Error steigt, der Test Error sinkt.', 'D) Beide Fehler steigen.'], correct:1, explanation:'Overfitting bedeutet, dass das Modell das Rauschen der Trainingsdaten auswendig lernt. Der Training Error wird minimal, aber auf neuen Daten (Test Error) scheitert das Modell.'},
+    {difficulty:'medium', question:'Wie verhalten sich Bias und Varianz, wenn die Modellkomplexität zunimmt?', options:['A) Bias steigt, Varianz sinkt.', 'B) Bias sinkt, Varianz sinkt.', 'C) Bias sinkt, Varianz steigt.', 'D) Beide bleiben konstant.'], correct:2, explanation:'Mehr Komplexität erlaubt es dem Modell, komplexe Strukturen zu lernen (niedriger Bias). Gleichzeitig reagiert das Modell sensibler auf kleine Datenänderungen (hohe Varianz).'},
+    {difficulty:'hard', question:'Aus welchen drei mathematischen Komponenten setzt sich der erwartete Test-MSE zusammen?', options:['A) Residuen, Achsenabschnitt und Steigung', 'B) Squared Bias, Variance und Irreducible Error Variance', 'C) R-Quadrat, F-Statistik und t-Wert', 'D) Trainingsfehler, Validierungsfehler und Stichprobenfehler'], correct:1, explanation:'Die mathematische Zerlegung lautet: Erwarteter Test-MSE = [Bias(f_hat)]² + Var(f_hat) + Var(epsilon). Letzteres ist das nicht reduzierbare Rauschen.'}
+  ],
+  'classifiers': [
+    {difficulty:'medium', question:'Welche Annahme macht der "Naive" Bayes Klassifikator?', options:['A) Die Features sind vollkommen linear abhängig.', 'B) Alle Features sind innerhalb einer Klasse unabhängig voneinander.', 'C) Die Zielvariable ist immer kontinuierlich.', 'D) Die Fehlerterme weisen Heteroskedastizität auf.'], correct:1, explanation:'Das "Naive" resultiert aus der oft unrealistischen Annahme, dass alle Prädiktoren bedingt durch die Klassenzugehörigkeit stochastisch unabhängig voneinander sind.'}
+  ],
+  'simple-lm': [
+    {difficulty:'medium', question:'Was minimiert das OLS-Verfahren (Ordinary Least Squares) bei einer einfachen Regression?', options:['A) Die Summe der absoluten Abweichungen.', 'B) Die Summe der quadrierten Residuen.', 'C) Den Korrelationskoeffizienten.', 'D) Das Bestimmtheitsmaß R-Quadrat.'], correct:1, explanation:'Die Methode der kleinsten Quadrate minimiert die Summe der quadrierten vertikalen Abweichungen (Residuen) zwischen den beobachteten Datenpunkten und der Regressionsgeraden.'}
+  ],
+  'multi-lm': [
+    {difficulty:'medium', question:'Welcher Wert des Variance Inflation Factor (VIF) deutet auf kritische Multikollinearität hin?', options:['A) VIF = 1', 'B) VIF < 0', 'C) VIF > 5 oder 10', 'D) VIF = 0'], correct:2, explanation:'Ein VIF von 1 bedeutet keine Kollinearität. Werte über 5 oder 10 zeigen an, dass die Varianz eines Koeffizienten wegen Kollinearität mit anderen Prädiktoren stark aufgebläht ist.'}
+  ],
+  'qualitative': [
+    {difficulty:'easy', question:'Wie viele Dummy-Variablen werden für ein qualitatives Merkmal mit k Ausprägungen benötigt?', options:['A) k', 'B) k - 1', 'C) k + 1', 'D) 2^k'], correct:1, explanation:'Man benötigt genau k - 1 Dummy-Variablen. Die verbleibende Kategorie dient als Referenzkategorie und wird über den Intercept dargestellt.'}
+  ],
+  'polynomial': [
+    {difficulty:'medium', question:'Was ist die Gefahr, wenn man den Grad eines Polynoms in der Regression zu hoch wählt?', options:['A) Extrem starkes Overfitting an den Rändern des Datenbereichs.', 'B) Das Modell wird strikt linear.', 'C) Die Varianz sinkt gegen Null.', 'D) Der Trainingsfehler steigt ins Unendliche.'], correct:0, explanation:'Hochgradige Polynome neigen zu starker Oszillation, insbesondere an den Rändern der Datenpunkte, was massives Overfitting verursacht.'}
+  ],
+  'interaction': [
+    {difficulty:'medium', question:'Was besagt das hierarchische Prinzip bei der Aufnahme von Interaktionstermen?', options:['A) Interaktionsterme dürfen nur ohne Achsenabschnitt vorkommen.', 'B) Wenn eine Interaktion signifikant ist, müssen auch die Haupteffekte im Modell bleiben.', 'C) Haupteffekte müssen vor der Interaktion logarithmiert werden.', 'D) Nur lineare Effekte dürfen interagieren.'], correct:1, explanation:'Das hierarchische Prinzip besagt, dass wenn ein Interaktionsterm (X1 * X2) im Modell enthalten ist, die Haupteffekte (X1 und X2) ebenfalls enthalten sein müssen, selbst wenn deren p-Werte nicht signifikant sind.'}
+  ],
+  'problems': [
+    {difficulty:'medium', question:'Was ist ein typisches Anzeichen für Heteroskedastizität?', options:['A) Ein trichterförmiges Muster im Residualplot.', 'B) Ein perfektes R-Quadrat von 1.0.', 'C) Vollkommen normalverteilte Fehler.', 'D) Eine extrem hohe F-Statistik.'], correct:0, explanation:'Heteroskedastizität bedeutet, dass die Varianz der Fehlerterme nicht konstant ist. Im Residualplot äußert sich dies meist durch eine Trichterform.'}
+  ],
+  'cv': [
+    {difficulty:'medium', question:'Welchen Vorteil hat k-Fold Cross-Validation gegenüber der einfachen Validation-Set-Methode?', options:['A) Sie benötigt deutlich weniger Rechenleistung.', 'B) Die Fehlerschätzung schwankt weniger stark und nutzt Daten effizienter.', 'C) Sie ist auf ungelabelte Daten anwendbar.', 'D) Sie eliminiert den Bias vollständig.'], correct:1, explanation:'Die einfache Aufteilung hängt stark vom Zufall des Splits ab. k-Fold mittelt über k Durchgänge, was die Schätzung des Testfehlers stabiler macht.'}
+  ],
+  'bootstrap': [
+    {difficulty:'medium', question:'Wie zieht das Bootstrap-Verfahren Stichproben aus den Originaldaten?', options:['A) Ohne Zurücklegen, jeweils die Hälfte.', 'B) Mit Zurücklegen (with replacement), in der identischen Größe n.', 'C) Es werden nur Extremwerte dupliziert.', 'D) Rein deterministisch nach Rangfolge.'], correct:1, explanation:'Bootstrap repliziert Stichproben durch Ziehen mit Zurücklegen. Dabei kann ein Datenpunkt mehrfach oder gar nicht in einer Bootstrap-Stichprobe landen.'}
+  ],
+  'highdim': [
+    {difficulty:'medium', question:'Was versteht man unter dem Begriff "Fluch der Dimensionalität" (Curse of Dimensionality)?', options:['A) Rechenzeit sinkt exponentiell.', 'B) Bei p >> n werden Modelle extrem instabil und overfitten im leeren Raum.', 'C) Prädiktoren verlieren ihre mathematische Definition.', 'D) Datenpunkte rücken im hochdimensionalen Raum enger zusammen.'], correct:1, explanation:'Wenn die Anzahl der Features p viel größer ist als die Stichprobengröße n, finden Modelle fast immer eine perfekte, aber bedeutungslose Trennebene.'}
+  ],
+  'lasso': [
+    {difficulty:'medium', question:'Welche mathematische Besonderheit unterscheidet Lasso fundamental von Ridge Regression?', options:['A) Lasso nutzt eine L1-Penalty und kann Koeffizienten exakt auf Null setzen.', 'B) Ridge minimiert den Bias, Lasso die Varianz.', 'C) Lasso nutzt quadratische Strafterme.', 'D) Lasso funktioniert nicht bei Multikollinearität.'], correct:0, explanation:'Durch die L1-Penalty (|beta|) erzeugt Lasso eine spitze Constraint-Region. Das führt dazu, dass unbedeutende Koeffizienten exakt Null werden (Feature Selection).'}
+  ]
+};
+
+const TOPICS = [
+  {id:'intro',n:1,icon:'📖',label:'Einführung & Statistical Modeling',keys:'supervised vs unsupervised, prediction vs inference, parametric vs non-parametric, flexibility, interpretability',xp:80},
+  {id:'bias-var',n:2,icon:'⚖️',label:'Modellgüte & Bias-Varianz-Tradeoff',keys:'MSE, training error, test error, bias, variance, overfitting, underfitting, model complexity',xp:100},
+  {id:'classifiers',n:3,icon:'🧮',label:'Naive Bayes, KNN & Logistische Regression',keys:'Bayes theorem, naive Bayes, K-nearest neighbors, logistic regression, sigmoid, decision boundary',xp:120},
+  {id:'simple-lm',n:4,icon:'📈',label:'Einfache lineare Regression',keys:'OLS, least squares, slope, intercept, RSE, R-squared, t-statistic, p-value',xp:90},
+  {id:'multi-lm',n:5,icon:'📉',label:'Multiple lineare Regression',keys:'multiple predictors, F-statistic, collinearity, VIF, adjusted R-squared',xp:110},
+  {id:'qualitative',n:6,icon:'🏷️',label:'Qualitative Prädiktoren',keys:'dummy variables, one-hot encoding, reference category, contrast coding',xp:70},
+  {id:'polynomial',n:7,icon:'〰️',label:'Regression mit Polynomtermen',keys:'polynomial regression, quadratic, cubic terms, nonlinear relationships',xp:80},
+  {id:'interaction',n:8,icon:'🔗',label:'Regressions-Interaktionsterme',keys:'interaction terms, synergy, multiplicative model, hierarchical principle',xp:80},
+  {id:'problems',n:9,icon:'⚠️',label:'Potentielle Probleme',keys:'heteroscedasticity, non-linearity, outliers, high leverage, multicollinearity, residual plots',xp:100},
+  {id:'cv',n:10,icon:'🔄',label:'Resampling: Kreuzvalidierung',keys:'LOOCV, k-fold cross-validation, validation set, test error estimation',xp:110},
+  {id:'bootstrap',n:11,icon:'🔃',label:'Resampling: Bootstrap',keys:'bootstrap sampling, standard error, confidence intervals, resampling with replacement',xp:90},
+  {id:'highdim',n:12,icon:'🧊',label:'Hochdimensionale Datenstrukturen',keys:'curse of dimensionality, p >> n, sparsity, regularization, feature selection',xp:100},
+  {id:'lasso',n:13,icon:'✂️',label:'Lasso-Regression',keys:'L1 regularization, sparsity, lambda, ridge vs lasso, variable selection',xp:120},
+];
+
+/* ===================== LOCAL FLASHCARDS ENGINE ===================== */
+const CARDS_POOL = {
+  'intro': [
+    {front: 'Supervised Learning', back: 'Lernverfahren mit bekannten Zielwerten (Labels). Ziel ist die Schätzung der Funktion, die X auf Y abbildet.'},
+    {front: 'Unsupervised Learning', back: 'Lernverfahren ohne Zielvariable Y. Es werden Strukturen, Cluster oder Muster in den Prädiktoren X gesucht.'},
+    {front: 'Parametrischer Ansatz', back: 'Reduziert das Problem der Funktionsschätzung auf die Schätzung von Parametern (z.B. lineare Regressionskoeffizienten).'}
+  ],
+  'bias-var': [
+    {front: 'Bias (Verzerrung)', back: 'Der Fehler, der durch die Vereinfachung eines hochkomplexen realen Problems durch ein simpleres Modell entsteht.'},
+    {front: 'Varianz', back: 'Gibt an, wie stark sich die geschätzte Modellfunktion f_hat ändern würde, wenn sie mit einem anderen Trainingsdatensatz berechnet würde.'},
+    {front: 'Overfitting', back: 'Tritt auf, wenn das Modell das zufällige Rauschen der Trainingsdaten statt der wahren Struktur lernt. Führt zu kleinem Training-MSE und hohem Test-MSE.'}
+  ]
+};
+
+/* ===================== STATE ===================== */
+const ST = JSON.parse(localStorage.getItem('slp_state') || 'null') || {
+  xp:0, streak:0, lastDay:'', progress:{}, examScores:[]
+};
+function save(){localStorage.setItem('slp_state', JSON.stringify(ST))}
+
+function addXP(n){
+  ST.xp += n;
+  const today = new Date().toDateString();
+  if(ST.lastDay !== today){ ST.streak++; ST.lastDay = today; }
+  save(); updateStreakBadge();
+}
+function updateStreakBadge(){document.getElementById('streak-num').textContent = ST.streak}
+function topicProgress(id){ return ST.progress[id] || {score:0, attempts:0, mastered:false} }
+function setTopicProg(id, score){
+  const p = topicProgress(id);
+  p.attempts++;
+  p.score = Math.max(p.score, score);
+  p.mastered = p.score >= 80;
+  ST.progress[id] = p;
+  save(); renderSidebar();
+}
+
+/* ===================== PAGES ===================== */
+let currentPage = 'dashboard';
+let currentTopic = TOPICS[0];
+
+function goPage(p){
+  currentPage = p;
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  const nt = document.getElementById('nt-'+p);
+  if(nt) nt.classList.add('active');
+  render();
+}
+
+function render(){
+  if(currentPage==='dashboard') renderDashboard();
+  else if(currentPage==='learn') renderLearn();
+  else if(currentPage==='viz') renderViz();
+  else if(currentPage==='exam') renderExam();
+}
+
+function renderSidebar(){
+  const sb = document.getElementById('sb-topics');
+  if(!sb) return;
+  sb.innerHTML = TOPICS.map(t=>{
+    const p = topicProgress(t.id);
+    const dot = p.mastered ? 'done' : p.attempts>0 ? 'partial' : 'none';
+    return `<button class="sb-item${currentTopic.id===t.id?' active':''}" onclick="selectTopic('${t.id}')">
+      <span>${t.icon}</span>
+      <span style="flex:1;font-size:12px;line-height:1.35">${t.label}</span>
+      <span class="prog-dot ${dot}"></span>
+    </button>`;
+  }).join('');
+}
+
+function selectTopic(id){
+  currentTopic = TOPICS.find(t=>t.id===id);
+  renderSidebar();
+  if(currentPage==='dashboard') goPage('learn');
+  else render();
+}
+
+/* ===================== DASHBOARD ===================== */
+function renderDashboard(){
+  const main = document.getElementById('main');
+  const totalMastered = TOPICS.filter(t=>topicProgress(t.id).mastered).length;
+  const lvl = Math.floor(ST.xp/200)+1;
+  const xpInLevel = ST.xp % 200;
+  const avgScore = Object.values(ST.progress).length
+    ? Math.round(Object.values(ST.progress).reduce((s,p)=>s+p.score,0)/Object.values(ST.progress).length) : 0;
+
+  main.innerHTML = `
+  <div class="hero-banner">
+    <div class="hero-avatar">🎓</div>
+    <div style="flex:1">
+      <div class="hero-title">Willkommen zurück!</div>
+      <div class="hero-sub">Level ${lvl} · ${ST.xp} XP gesamt · Lokaler Lernmodus aktiv 🚀</div>
+      <div class="xp-bar-wrap">
+        <div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${xpInLevel/2}%"></div></div>
+        <div class="xp-label">${xpInLevel}/200 XP bis Level ${lvl+1}</div>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:36px;font-weight:800;color:var(--amber)">${ST.streak}</div>
+      <div style="font-size:12px;color:var(--text3)">Tage Streak 🔥</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="stat-card"><div class="stat-val text-purple">${totalMastered}/${TOPICS.length}</div><div class="stat-lbl">Themen gemeistert</div></div>
+    <div class="stat-card"><div class="stat-val text-green">${ST.xp}</div><div class="stat-lbl">XP verdient</div></div>
+    <div class="stat-card"><div class="stat-val text-amber">${avgScore || '–'}</div><div class="stat-lbl">Ø Score</div></div>
+    <div class="stat-card"><div class="stat-val text-purple">${ST.examScores.length}</div><div class="stat-lbl">Prüfungs-Runs</div></div>
+  </div>
+
+  <div style="margin-bottom:1.25rem">
+    <div class="section-title" style="font-size:17px;margin-bottom:1rem">Alle Kapitel</div>
+    <div class="topic-grid">
+      ${TOPICS.map(t=>{
+        const p = topicProgress(t.id);
+        return `<div class="topic-card${p.mastered?' completed':''}" onclick="selectTopic('${t.id}')">
+          ${p.mastered ? '<span class="badge-done">✓ Gemeistert</span>' : ''}
+          <div class="topic-icon">${t.icon}</div>
+          <div class="topic-name">${t.label}</div>
+          <div class="topic-meta">${t.xp} XP · ${p.attempts} Versuche</div>
+          <div class="topic-prog"><div class="topic-prog-fill${p.mastered?' done':''}" style="width:${p.score}%"></div></div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+/* ===================== LEARN ===================== */
+let learnMode = 'quiz';
+let quizState = {q:null, answered:false};
+let fcCards = [], fcIdx = 0;
+
+function renderLearn(){
+  const main = document.getElementById('main');
+  const p = topicProgress(currentTopic.id);
+  main.innerHTML = `
+  <div class="section-hd">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem">
+      <span style="font-size:22px">${currentTopic.icon}</span>
+      <div class="section-title" style="font-size:18px;margin:0">${currentTopic.label}</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="pill pill-purple">Kapitel ${currentTopic.n}</span>
+      ${p.mastered ? '<span class="pill pill-green">✓ Gemeistert</span>' : ''}
+      ${p.attempts>0 ? `<span class="pill pill-amber">Bester Score: ${p.score}%</span>` : ''}
+    </div>
+  </div>
+  <div class="inner-tabs">
+    <button class="inner-tab${learnMode==='quiz'?' active':''}" onclick="setLearnMode('quiz')"><i class="ti ti-help-circle" aria-hidden="true"></i> Lokales Quiz</button>
+    <button class="inner-tab${learnMode==='flash'?' active':''}" onclick="setLearnMode('flash')"><i class="ti ti-cards" aria-hidden="true"></i> Karteikarten</button>
+    <button class="inner-tab${learnMode==='game'?' active':''}" onclick="setLearnMode('game')"><i class="ti ti-device-gamepad-2" aria-hidden="true"></i> Lernspiel</button>
+    <button class="inner-tab${learnMode==='summary'?' active':''}" onclick="setLearnMode('summary')"><i class="ti ti-list" aria-hidden="true"></i> Zusammenfassung</button>
+  </div>
+  <div id="learn-body"></div>`;
+  renderLearnBody();
+}
+
+function setLearnMode(m){ learnMode=m; renderLearnBody(); }
+
+function renderLearnBody(){
+  const b = document.getElementById('learn-body');
+  if(learnMode==='quiz') renderQuizBody(b);
+  else if(learnMode==='flash') renderFlashBody(b);
+  else if(learnMode==='game') renderGameBody(b);
+  else renderSummaryBody(b);
+}
+
+function renderQuizBody(b){
+  b.innerHTML = `<div id="q-area"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="loadLocalQuestion()"><i class="ti ti-refresh" aria-hidden="true"></i> Nächste Frage</button>
+  </div>`;
+  loadLocalQuestion();
+}
+
+function loadLocalQuestion(){
+  quizState.answered = false;
+  const qa = document.getElementById('q-area');
+  if(!qa) return;
+
+  const pool = QUESTION_POOL[currentTopic.id] || [];
+  if(pool.length === 0){
+    qa.innerHTML = `<div class="empty"><i class="ti ti-info-circle" aria-hidden="true"></i><p>Für dieses Kapitel stehen im interaktiven Modus die Karteikarten, Visualisierungen und die Prüfungssimulation bereit.</p></div>`;
+    return;
+  }
+
+  const randQ = pool[Math.floor(Math.random() * pool.length)];
+  quizState.q = randQ;
+  
+  const dCls = randQ.difficulty==='easy'?'pill-green':randQ.difficulty=='hard'?'pill-red':'pill-amber';
+  const dLbl = randQ.difficulty==='easy'?'Leicht':randQ.difficulty=='hard'?'Schwer':'Mittel';
+
+  qa.innerHTML = `
+  <div class="card">
+    <div class="q-meta"><span class="pill ${dCls}">${dLbl}</span></div>
+    <div class="q-text">${randQ.question}</div>
+    <div class="opts">
+      ${randQ.options.map((o,i)=>`<button class="opt" id="qo${i}" onclick="answerQ(${i})">${o}</button>`).join('')}
+    </div>
+    <div class="explanation" id="qexp"><strong>💡 Erklärung:</strong> ${randQ.explanation}</div>
+  </div>`;
+}
+
+function answerQ(idx){
+  if(quizState.answered) return;
+  quizState.answered = true;
+  const q = quizState.q;
+  const correct = idx === q.correct;
+  
+  q.options.forEach((_,i)=>{
+    const b = document.getElementById('qo'+i);
+    if(b){
+      b.disabled = true;
+      if(i===q.correct) b.classList.add(correct||i!==idx?'correct':'show-correct');
+      else if(i===idx) b.classList.add('wrong');
+    }
+  });
+  
+  document.getElementById('qexp').classList.add('show');
+  setTopicProg(currentTopic.id, correct ? 100 : 0);
+  addXP(correct ? 20 : 5);
+}
+
+function renderFlashBody(b){
+  let cards = CARDS_POOL[currentTopic.id];
+  if(!cards){
+    const splitted = currentTopic.keys.split(', ');
+    cards = splitted.map(k => ({
+      front: k.charAt(0).toUpperCase() + k.slice(1),
+      back: `Zentrales Konzept aus Kapitel ${currentTopic.n} (${currentTopic.label}). Schlage dieses im ISLP-Lehrbuch für tiefergehende statistische Herleitungen nach.`
+    }));
+  }
+
+  fcCards = cards;
+  if(fcIdx >= fcCards.length) fcIdx = 0;
+
+  const card = fcCards[fcIdx];
+  b.innerHTML = `
+  <div style="font-size:13px;color:var(--text3);margin-bottom:.75rem;text-align:center">${fcIdx+1} / ${fcCards.length}</div>
+  <div class="fc-scene" onclick="flipFC()">
+    <div class="fc-card" id="fc-inner">
+      <div class="fc-face fc-front"><div class="fc-label">Konzept / Fachbegriff</div><div class="fc-text">${card.front}</div><div style="font-size:11px;color:var(--text3);margin-top:1rem">Klicken zum Wenden</div></div>
+      <div class="fc-face fc-back"><div class="fc-label">Definition & Bedeutung</div><div class="fc-text">${card.back}</div></div>
+    </div>
+  </div>
+  <div class="btn-row" style="justify-content:center;margin-top:1rem">
+    <button class="btn btn-green btn-sm" onclick="rateFlashcard()">😊 Gewusst (+5 XP)</button>
+    <button class="btn btn-sm" onclick="fcNav(1)">🤔 Später noch einmal</button>
+  </div>
+  <div class="btn-row" style="justify-content:center;margin-top:1.25rem">
+    <button class="btn" onclick="fcNav(-1)" ${fcIdx===0?'disabled':''}><i class="ti ti-arrow-left" aria-hidden="true"></i> Zurück</button>
+    <button class="btn btn-primary" onclick="fcNav(1)" ${fcIdx===fcCards.length-1?'disabled':''}><i class="ti ti-arrow-right" aria-hidden="true"></i> Weiter</button>
+  </div>`;
+}
+
+function flipFC(){const fc=document.getElementById('fc-inner');if(fc)fc.classList.toggle('flipped')}
+function rateFlashcard(){ addXP(5); fcNav(1); }
+function fcNav(d){
+  fcIdx=Math.max(0,Math.min(fcCards.length-1,fcIdx+d));
+  renderLearnBody();
+}
+
+function renderGameBody(b){
+  if(currentTopic.id==='bias-var'){
+    b.innerHTML = `
+    <div class="card">
+      <h3 style="margin-bottom:1rem">🎯 Bias-Variance Minigame</h3>
+      <p style="margin-bottom:1rem;color:var(--text2)">Bewege den Regler, um die Komplexität so einzustellen, dass der resultierende Test-MSE minimiert wird.</p>
+      <div class="slider-row" style="margin:1.5rem 0">
+        <input type="range" min="1" max="20" value="5" id="game-complexity" oninput="updateBiasGame()">
+        <span class="val-badge" id="game-c-val">5</span>
+      </div>
+      <div class="stat-card" style="margin-bottom:1rem">
+        <div class="stat-val text-purple" id="game-mse">1.50</div>
+        <div class="stat-lbl">Berechneter Test-MSE</div>
+      </div>
+      <button class="btn btn-primary" onclick="submitBiasGame()">Konfiguration prüfen</button>
+      <div id="game-feedback" style="margin-top:1rem"></div>
+    </div>`;
+    setTimeout(updateBiasGame,20);
+    return;
+  }
+
+  if(currentTopic.id==='qualitative'){
+    b.innerHTML = `
+    <div class="card">
+      <h3 style="margin-bottom:1rem">Dummy-Variablen Codierung</h3>
+      <p style="color:var(--text2);margin-bottom:1rem">Ein qualitatives Merkmal besitzt genau <strong>4 distinkte Ausprägungen</strong> (z.B. Frühling, Sommer, Herbst, Winter). Wie viele Dummy-Variablen musst du in das Modell aufnehmen?</p>
+      <input id="dummy-answer" type="number" min="0" max="10" style="padding:10px;border-radius:8px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);width:100px">
+      <button class="btn btn-primary" style="margin-left:10px" onclick="checkDummyGame()">Prüfen</button>
+      <div id="dummy-feedback" style="margin-top:1rem"></div>
+    </div>`;
+    return;
+  }
+
+  b.innerHTML = `
+  <div class="card">
+    <h3 style="margin-bottom:1rem">📊 Live Sandbox</h3>
+    <p style="color:var(--text2)">Nutze das Tab <strong>"Visualisierungen"</strong> im oberen Menü, um mathematische Zusammenhänge interaktiv durch Schieberegler direkt im Browser zu explorieren.</p>
+  </div>`;
+}
+
+function updateBiasGame(){
+  const c = parseInt(document.getElementById('game-complexity').value);
+  document.getElementById('game-c-val').textContent = c;
+  const bias2 = Math.max(0.05, 2.5-0.13*c+0.002*c*c);
+  const variance = 0.05+0.008*c+0.012*c*c;
+  const mse = bias2+variance+0.1;
+  document.getElementById('game-mse').textContent = mse.toFixed(2);
+}
+
+function submitBiasGame(){
+  const c = parseInt(document.getElementById('game-complexity').value);
+  const fb = document.getElementById('game-feedback');
+  if(c >= 7 && c <= 9){
+    addXP(30);
+    fb.innerHTML = '<span class="text-green">✓ Optimal! Du hast den perfekten Tradeoff-Punkt getroffen (+30 XP).</span>';
+  } else if(c < 7){
+    fb.innerHTML = '<span class="text-amber">Underfitting! Erhöhe die Modellkomplexität, um den hohen Bias zu verringern.</span>';
+  } else {
+    fb.innerHTML = '<span class="text-red">Overfitting! Reduziere die Flexibilität, da die Varianz sonst explodiert.</span>';
+  }
+}
+
+function checkDummyGame(){
+  const val = parseInt(document.getElementById('dummy-answer').value);
+  const fb = document.getElementById('dummy-feedback');
+  if(val===3){
+    addXP(20);
+    fb.innerHTML = '<span class="text-green">✓ Korrekt! Nach dem Prinzip k-1 benötigt man für 4 Gruppen genau 3 Dummies.</span>';
+  }else{
+    fb.innerHTML = '<span class="text-red">✗ Falsch. Überlege, wie viele Freiheitsgrade nach Abzug der Referenzkategorie bleiben.</span>';
+  }
+}
+
+function renderSummaryBody(b){
+  b.innerHTML = `
+  <div class="card" style="line-height:1.7">
+    <h3 style="margin-bottom:0.75rem; color:var(--purple-l)">Kapitel-Zusammenfassung</h3>
+    <p style="color:var(--text2); margin-bottom:1rem">Dieser Lernbereich behandelt die theoretischen Fundamente aus <em>Introduction to Statistical Learning (ISLP)</em>.</p>
+    <h4 style="margin:1rem 0 0.5rem; font-size:14px">Wichtige Schlagworte für die Klausurvorbereitung:</h4>
+    <div style="display:flex; gap:6px; flex-wrap:wrap">
+      ${currentTopic.keys.split(', ').map(k=>`<span class="chip">${k}</span>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ===================== INTERACTIVE VISUALIZATIONS ===================== */
+let vizMode = 'biasvar';
+let bvChart = null, lassChart = null, cvChart = null, logitChart = null;
+
+function renderViz(){
+  const main = document.getElementById('main');
+  main.innerHTML = `
+  <div class="section-hd"><div class="section-title">Interaktive Visualisierungen</div><div class="section-sub">Parameter ändern und mathematische Auswirkungen in Echtzeit beobachten</div></div>
+  <div class="inner-tabs">
+    <button class="inner-tab${vizMode==='biasvar'?' active':''}" onclick="setVizMode('biasvar')">Bias-Varianz</button>
+    <button class="inner-tab${vizMode==='lasso'?' active':''}" onclick="setVizMode('lasso')">Lasso Shrinkage</button>
+    <button class="inner-tab${vizMode==='cv'?' active':''}" onclick="setVizMode('cv')">Kreuzvalidierung</button>
+    <button class="inner-tab${vizMode==='logit'?' active':''}" onclick="setVizMode('logit')">Logistische Fkt.</button>
+  </div>
+  <div id="viz-body"></div>`;
+  renderVizBody();
+}
+
+function setVizMode(m){
+  vizMode=m;
+  if(bvChart){bvChart.destroy();bvChart=null}
+  if(lassChart){lassChart.destroy();lassChart=null}
+  if(cvChart){cvChart.destroy();cvChart=null}
+  if(logitChart){logitChart.destroy();logitChart=null}
+  renderVizBody();
+}
+
+function renderVizBody(){
+  const b = document.getElementById('viz-body');
+  if(!b) return;
+  if(vizMode==='biasvar') renderBiasVar(b);
+  else if(vizMode==='lasso') renderLassoViz(b);
+  else if(vizMode==='cv') renderCVViz(b);
+  else renderLogitViz(b);
+}
+
+function renderBiasVar(b){
+  b.innerHTML = `
+  <div class="card">
+    <div class="viz-controls">
+      <span class="viz-label">Komplexität</span>
+      <div class="slider-row"><input type="range" min="1" max="20" value="5" id="sl-complexity" oninput="updateBV()"><span class="val-badge" id="vb-c">5</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1rem">
+      <div class="stat-card"><div class="stat-val text-red" id="bv-bias">–</div><div class="stat-lbl">Bias²</div></div>
+      <div class="stat-card"><div class="stat-val text-blue" id="bv-var">–</div><div class="stat-lbl">Varianz</div></div>
+      <div class="stat-card"><div class="stat-val text-purple" id="bv-mse">–</div><div class="stat-lbl">Test-MSE</div></div>
+    </div>
+    <canvas id="bv-chart" height="220"></canvas>
+  </div>`;
+  initBVChart();
+}
+
+function initBVChart(){
+  const ctx = document.getElementById('bv-chart');
+  if(!ctx) return;
+  const labels = Array.from({length:20},(_,i)=>'k='+(i+1));
+  const bias2 = Array.from({length:20},(_,i)=>Math.max(0.05, 2.5-0.13*(i+1)+0.002*(i+1)*(i+1)));
+  const variance = Array.from({length:20},(_,i)=>0.05+0.008*(i+1)+0.012*(i+1)*(i+1));
+  const mse = bias2.map((b,i)=>b+variance[i]+0.1);
+  bvChart = new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Bias²',data:bias2,borderColor:'#F87171',backgroundColor:'transparent',tension:.4},
+      {label:'Varianz',data:variance,borderColor:'#60A5FA',backgroundColor:'transparent',tension:.4},
+      {label:'Test-MSE',data:mse,borderColor:'#A89AF5',tension:.4,borderWidth:3}
+    ]},
+    options:{responsive:true,scales:{x:{grid:{color:'rgba(255,255,255,.05)'}},y:{grid:{color:'rgba(255,255,255,.05)'}}}}
+  });
+  updateBV();
+}
+
+function updateBV(){
+  const s = document.getElementById('sl-complexity');
+  if(!s) return;
+  const c = parseInt(s.value);
+  document.getElementById('vb-c').textContent = c;
+  const bias2 = Math.max(0.05, 2.5-0.13*c+0.002*c*c);
+  const variance = 0.05+0.008*c+0.012*c*c;
+  const mse = bias2+variance+0.1;
+  document.getElementById('bv-bias').textContent = bias2.toFixed(2);
+  document.getElementById('bv-var').textContent = variance.toFixed(2);
+  document.getElementById('bv-mse').textContent = mse.toFixed(2);
+}
+
+function renderLassoViz(b){
+  b.innerHTML = `
+  <div class="card">
+    <div class="viz-controls">
+      <span class="viz-label">Lambda (λ)</span>
+      <div class="slider-row"><input type="range" min="0" max="100" value="20" id="sl-lambda" oninput="updateLasso()"><span class="val-badge" id="vb-l">0.20</span></div>
+    </div>
+    <canvas id="lasso-chart" height="240"></canvas>
+    <div id="lasso-info" style="margin-top:.75rem;font-size:13px;color:var(--text2);text-align:center"></div>
+  </div>`;
+  initLassoChart();
+}
+
+function initLassoChart(){
+  const ctx = document.getElementById('lasso-chart');
+  if(!ctx) return;
+  const lams = Array.from({length:50},(_,i)=>i*2);
+  const coefs = [
+    {label:'β₁ (Wichtig)',color:'#7C6FED',init:2.5},
+    {label:'β₂ (Mittel)',color:'#36D399',init:1.2},
+    {label:'β₃ (Klein)',color:'#FBBF24',init:0.6}
+  ];
+  lassChart = new Chart(ctx,{
+    type:'line',
+    data:{labels:lams.map(l=>(l/100).toFixed(2)),datasets:coefs.map(c=>({
+      label:c.label,borderColor:c.color,data:lams.map(l=>Math.max(0,c.init-l/100*c.init*1.25)),tension:.2,fill:false
+    }))},
+    options:{responsive:true}
+  });
+  updateLasso();
+}
+
+function updateLasso(){
+  const s = document.getElementById('sl-lambda');
+  if(!s) return;
+  const lv = parseInt(s.value);
+  document.getElementById('vb-l').textContent = (lv/100).toFixed(2);
+  const vals = [2.5, 1.2, 0.6].map(v=>Math.max(0,v-lv/100*v*1.25));
+  const zeroed = vals.filter(v=>v===0).length;
+  document.getElementById('lasso-info').textContent = `Bei λ=${(lv/100).toFixed(2)} sind bereits ${zeroed} Koeffizienten exakt Null (Feature Selection).`;
+}
+
+function renderCVViz(b){
+  b.innerHTML = `
+  <div class="card">
+    <div class="viz-controls">
+      <span class="viz-label">k-Folds</span>
+      <div class="slider-row"><input type="range" min="2" max="20" value="5" id="sl-k" oninput="updateCV()"><span class="val-badge" id="vb-k">5</span></div>
+    </div>
+    <canvas id="cv-chart" height="220"></canvas>
+  </div>`;
+  initCVChart();
+}
+
+function initCVChart(){
+  const ctx = document.getElementById('cv-chart');
+  if(!ctx) return;
+  cvChart = new Chart(ctx,{type:'bar',data:{labels:Array.from({length:20},(_,i)=>'S'+(i+1)),datasets:[
+    {label:'Training Set',data:Array(20).fill(1),backgroundColor:'#3D3580'},
+    {label:'Validation Set',data:Array(20).fill(0),backgroundColor:'#36D399'}
+  ]},options:{responsive:true,scales:{x:{stacked:true},y:{display:false,stacked:true}}}});
+  updateCV();
+}
+
+function updateCV(){
+  const s = document.getElementById('sl-k');
+  if(!s) return;
+  const k = parseInt(s.value);
+  document.getElementById('vb-k').textContent = k;
+  const trainData = Array(20).fill(1);
+  const valData = Array(20).fill(0);
+  const size = Math.max(1, Math.round(20/k));
+  for(let i=0;i<size;i++){valData[i]=1;trainData[i]=0;}
+  if(cvChart){
+    cvChart.data.datasets[0].data = trainData;
+    cvChart.data.datasets[1].data = valData;
+    cvChart.update('none');
+  }
+}
+
+function renderLogitViz(b){
+  b.innerHTML = `
+  <div class="card">
+    <div class="viz-controls">
+      <span class="viz-label">Steigung (β₁)</span>
+      <div class="slider-row"><input type="range" min="-30" max="30" value="10" id="sl-b1" oninput="updateLogit()"><span class="val-badge" id="vb-b1">1.0</span></div>
+    </div>
+    <canvas id="logit-chart" height="220"></canvas>
+  </div>`;
+  initLogitChart();
+}
+
+function initLogitChart(){
+  const ctx = document.getElementById('logit-chart');
+  if(!ctx) return;
+  const xs = Array.from({length:60},(_,i)=>-3+i*0.1);
+  logitChart = new Chart(ctx,{type:'line',data:{labels:xs.map(x=>x.toFixed(1)),datasets:[{label:'p(X)',data:xs.map(x=>1/(1+Math.exp(-x))),borderColor:'#7C6FED',tension:.3}]},options:{responsive:true}});
+  updateLogit();
+}
+
+function updateLogit(){
+  const s = document.getElementById('sl-b1');
+  if(!s) return;
+  const b1 = parseInt(s.value)/10;
+  document.getElementById('vb-b1').textContent = b1.toFixed(1);
+  const xs = Array.from({length:60},(_,i)=>-3+i*0.1);
+  const ys = xs.map(x=>1/(1+Math.exp(-(b1*x))));
+  if(logitChart){logitChart.data.datasets[0].data = ys; logitChart.update('none');}
+}
+
+/* ===================== OFFLINE EXAM SIMULATION ===================== */
+let examState = {phase:'setup',qs:[],current:0,answers:[],timeLeft:0,timer:null,n:5};
+
+function renderExam(){
+  const main = document.getElementById('main');
+  if(!main) return;
+  if(examState.phase==='setup') renderExamSetup(main);
+  else if(examState.phase==='running') renderExamRunning(main);
+  else renderExamResult(main);
+}
+
+function renderExamSetup(main){
+  main.innerHTML = `
+  <div class="section-hd"><div class="section-title">Prüfungssimulation</div><div class="section-sub">Generiert eine Testklausur aus allen mathematischen Kapiteln</div></div>
+  <div class="card" style="max-width:480px">
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:14px;font-weight:500;margin-bottom:8px;color:var(--text2)">Anzahl der Fragen wählen</div>
+      <div style="display:flex;gap:8px">
+        ${[3,5,10].map(n=>`<button class="btn${examState.n===n?' btn-primary':''} btn-sm" onclick="setExamN(${n})">${n} Fragen</button>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:1rem;background:var(--bg3);border-radius:var(--rs);margin-bottom:1.5rem">
+      <i class="ti ti-clock" style="font-size:24px;color:var(--amber)" aria-hidden="true"></i>
+      <div>
+        <div style="font-size:14px;font-weight:500">${examState.n * 2} Minuten</div>
+        <div style="font-size:12px;color:var(--text3)">Echtzeit-Countdown aktiv</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="startExam()"><i class="ti ti-player-play" aria-hidden="true"></i> Simulation starten</button>
+  </div>`;
+}
+
+function setExamN(n){ examState.n=n; renderExam(); }
+
+function startExam(){
+  let pool = [];
+  Object.keys(QUESTION_POOL).forEach(k=> { pool = pool.concat(QUESTION_POOL[k]); });
+  
+  const shuffled = [...pool].sort(()=>Math.random() - 0.5);
+  examState.qs = shuffled.slice(0, Math.min(examState.n, shuffled.length));
+  
+  examState.phase = 'running';
+  examState.current = 0;
+  examState.answers = [];
+  examState.timeLeft = examState.qs.length * 120;
+  
+  renderExam();
+  if(examState.timer) clearInterval(examState.timer);
+  examState.timer = setInterval(()=>{
+    examState.timeLeft--;
+    const el = document.getElementById('exam-timer');
+    if(el){
+      const m=Math.floor(examState.timeLeft/60), s=examState.timeLeft%60;
+      el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    }
+    if(examState.timeLeft<=0){ finishExam(); }
+  },1000);
+}
+
+function renderExamRunning(main){
+  const q = examState.qs[examState.current];
+  const total = examState.qs.length;
+  const m=Math.floor(examState.timeLeft/60), s=examState.timeLeft%60;
+  main.innerHTML = `
+  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem">
+    <div class="progress-ring-wrap" style="flex:1;margin:0">
+      <span class="q-counter">${examState.current+1}/${total}</span>
+      <div class="prog-bar"><div class="prog-fill" style="width:${(examState.current/total)*100}%"></div></div>
+    </div>
+    <div class="timer" id="exam-timer">${m}:${s.toString().padStart(2,'0')}</div>
+  </div>
+  <div class="card">
+    <div class="q-text">${q.question}</div>
+    <div class="opts">
+      ${q.options.map((o,i)=>`<button class="opt" id="eo${i}" onclick="examAnswer(${i})">${o}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+function examAnswer(idx){
+  examState.answers.push({chosen:idx, correct:examState.qs[examState.current].correct});
+  examState.current++;
+  if(examState.current >= examState.qs.length) finishExam();
+  else renderExam();
+}
+
+function finishExam(){
+  if(examState.timer) clearInterval(examState.timer);
+  examState.phase = 'result';
+  const correct = examState.answers.filter(a=>a.chosen===a.correct).length;
+  const pct = Math.round((correct/examState.qs.length)*100);
+  ST.examScores.push({correct, total:examState.qs.length, pct});
+  addXP(pct);
+  renderExam();
+}
+
+function renderExamResult(main){
+  const last = ST.examScores[ST.examScores.length-1];
+  main.innerHTML = `
+  <div class="result-center">
+    <div class="result-ring">${last.pct}%</div>
+    <div style="font-size:22px;font-weight:700;margin-bottom:8px">Ergebnis ausgewertet</div>
+    <div style="font-size:15px;color:var(--text2);margin-bottom:1.5rem">${last.correct} von ${last.total} richtig gelöst.</div>
+    <button class="btn btn-primary" onclick="examState.phase='setup';renderExam()">Erneut versuchen</button>
+  </div>`;
+}
+
+/* ===================== INIT ===================== */
+updateStreakBadge();
+renderSidebar();
+render();
+</script>
+</body>
+</html>
