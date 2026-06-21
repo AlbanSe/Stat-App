@@ -220,4 +220,604 @@ const ISLP_DATA = {
     { t: 't3', q: "Wieso eignet sich lineare Regression oft nicht für Klassifikation?", a: "Sie kann Werte >1 oder <0 ausgeben, die als Wahrscheinlichkeiten sinnlos sind. Bei k>2 maskiert eine numerische (1,2,3) Codierung die Abstände zwischen Kategorien (Dummy Variable Trap ignorierend)." },
     { t: 't4', q: "Was gibt der RSE (Residual Standard Error) an?", a: "Er schätzt die Standardabweichung des Fehlerterms ε. Er gibt grob an, um wie viel die Vorhersage im Schnitt vom wahren Wert abweicht (absolutes Maß)." },
     { t: 't5', q: "Wie interpretiert man β_j in der Multiplen Lin. Reg.?", a: "Als die durchschnittliche Änderung in Y bei Erhöhung von X_j um eine Einheit, VORAUSGESETZT alle anderen Prädiktoren bleiben konstant (ceteris paribus)." },
-    { t: 't6', q: "Wie codiert man eine kategoriale Variable mit 4 Levels?", a: "Mit ex
+    { t: 't6', q: "Wie codiert man eine kategoriale Variable mit 4 Levels?", a: "Mit exakt 3 (k-1) Dummy-Variablen. Das fehlende Level fungiert als Referenzgruppe (Baseline), die vom Intercept repräsentiert wird." },
+    { t: 't7', q: "Was ist ein 'High Leverage Point'?", a: "Eine Beobachtung mit sehr ungewöhnlichen / extremen X-Werten. Sie zieht die Regressionsgerade stark an sich, selbst wenn ihr Y-Wert nicht als Ausreißer wirkt." },
+    { t: 't8', q: "Warum überschätzt der Validation-Set-Approach (50/50 Split) den Testfehler oft?", a: "Das Modell lernt nur auf 50% der Daten. Statistische Modelle performen mit weniger Daten schlechter, daher ist der geschätzte Fehler pessimistischer als das Modell, das am Ende auf 100% trainiert wird." },
+    { t: 't9', q: "Wofür nutzt man den Bootstrap primär?", a: "Zur empirischen Schätzung von Standardfehlern und Konfidenzintervallen für beliebige Schätzer (z.B. Alpha, Median), wenn keine einfachen analytischen Formeln vorliegen." },
+    { t: 't10', q: "Was ist der 'Fluch der Dimensionalität'?", a: "In hochdimensionalen Räumen rücken alle Datenpunkte extrem weit voneinander weg. Die Konzepte von Distanz und 'Nachbarschaft' (KNN) brechen zusammen, Rauschen dominiert." },
+    { t: 't11', q: "Lasso vs. Ridge - Wann ist welches besser?", a: "Lasso ist besser, wenn in Wahrheit nur GANZ WENIGE Prädiktoren einen Effekt haben (Sparsity). Ridge ist besser, wenn VIELE Prädiktoren einen kleinen, ähnlichen Effekt haben." }
+  ]
+};
+
+// Application State
+const appState = {
+  currentView: 'dashboard', currentTopicId: 't1', learningMode: 'theory',
+  streak: parseInt(localStorage.getItem('islp_streak') || 0),
+  lastActive: localStorage.getItem('islp_last_date') || '',
+  xp: parseInt(localStorage.getItem('islp_xp') || 0),
+  progress: JSON.parse(localStorage.getItem('islp_progress') || '{}'),
+  
+  // Interactive Viz States
+  lr_b0: 0, lr_b1: 1, bv_complexity: 5, lasso_lambda: 0, sig_b1: 1
+};
+
+// Initialize Progress Trackers
+ISLP_DATA.topics.forEach(t => {
+  if(!appState.progress[t.id]) appState.progress[t.id] = { started: false, score: 0 };
+});
+
+function saveState() {
+  localStorage.setItem('islp_xp', appState.xp);
+  localStorage.setItem('islp_progress', JSON.stringify(appState.progress));
+}
+
+function updateStreak() {
+  const today = new Date().toDateString();
+  if (appState.lastActive !== today) {
+    appState.streak++;
+    appState.lastActive = today;
+    localStorage.setItem('islp_streak', appState.streak);
+    localStorage.setItem('islp_last_date', appState.lastActive);
+  }
+  document.getElementById('ui-streak').innerText = appState.streak;
+}
+
+function addXP(amount) {
+  appState.xp += amount;
+  saveState();
+  if(appState.currentView === 'dashboard') renderDashboard();
+}
+
+const app = {
+  init() {
+    updateStreak();
+    this.renderSidebar();
+    this.navigate('dashboard');
+  },
+  
+  navigate(view) {
+    appState.currentView = view;
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById(`nav-${view}`);
+    if(btn) btn.classList.add('active');
+    
+    if(view === 'dashboard') renderDashboard();
+    else if(view === 'learn') renderLearningArea();
+    else if(view === 'exam') renderExam();
+  },
+
+  setTopic(tid) {
+    appState.currentTopicId = tid;
+    appState.progress[tid].started = true;
+    saveState();
+    this.renderSidebar();
+    if(appState.currentView !== 'learn') this.navigate('learn');
+    else renderLearningArea();
+  },
+
+  setLearnMode(mode) {
+    appState.learningMode = mode;
+    renderLearningArea();
+  },
+
+  renderSidebar() {
+    const sb = document.getElementById('sidebar-topics');
+    sb.innerHTML = ISLP_DATA.topics.map(t => {
+      const p = appState.progress[t.id];
+      const cls = p.score >= 80 ? 'mastered' : (p.started ? 'started' : '');
+      return `
+        <button class="topic-btn ${t.id === appState.currentTopicId && appState.currentView === 'learn' ? 'active' : ''}" onclick="app.setTopic('${t.id}')">
+          <span class="topic-icon">${t.icon}</span>
+          <div style="line-height:1.2">
+             <div style="font-weight:600; color:var(--text-main); margin-bottom:2px">${t.title}</div>
+             <div style="font-size:0.75rem; color:var(--text-dark)">Kapitel ${t.id.replace('t','')}</div>
+          </div>
+          <span class="topic-status ${cls}"></span>
+        </button>
+      `;
+    }).join('');
+  }
+};
+
+// ================= RENDER LOGIC =================
+
+function renderDashboard() {
+  const main = document.getElementById('main-view');
+  const level = Math.floor(appState.xp / 300) + 1;
+  const xpNext = appState.xp % 300;
+  const mastered = Object.values(appState.progress).filter(p => p.score >= 80).length;
+
+  main.innerHTML = `
+    <div class="hero">
+      <div class="hero-icon"><i class="ti ti-school"></i></div>
+      <div style="flex:1">
+        <h1 style="margin-bottom:0.5rem">ISLP Masterclass</h1>
+        <p style="margin-bottom:1rem; font-size:1.1rem; color:#cbd5e1;">Level ${level} Data Scientist | Lerne Statistical Learning intuitiv und interaktiv.</p>
+        <div style="height:6px; background:var(--bg-base); border-radius:10px; overflow:hidden">
+           <div style="height:100%; width:${(xpNext/300)*100}%; background:linear-gradient(90deg, var(--primary), var(--info));"></div>
+        </div>
+        <div style="font-size:0.75rem; margin-top:0.5rem; color:var(--text-dark)">${xpNext} / 300 XP bis Level ${level+1}</div>
+      </div>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="glass-panel stat-card">
+        <div class="stat-value">${mastered} / 11</div>
+        <div class="stat-lbl">Kapitel Gemeistert</div>
+      </div>
+      <div class="glass-panel stat-card">
+        <div class="stat-value text-green">${appState.xp}</div>
+        <div class="stat-lbl">Erfahrungspunkte (XP)</div>
+      </div>
+      <div class="glass-panel stat-card">
+        <div class="stat-value text-amber">${appState.streak}</div>
+        <div class="stat-lbl">Tage Streak 🔥</div>
+      </div>
+    </div>
+
+    <h2 style="margin-bottom:1rem">Deine Themenübersicht</h2>
+    <div class="topic-grid">
+      ${ISLP_DATA.topics.map(t => {
+        const p = appState.progress[t.id];
+        return `
+        <div class="glass-panel topic-card ${p.score >= 80 ? 'completed' : ''}" onclick="app.setTopic('${t.id}')">
+          ${p.score >= 80 ? '<div class="badge-done" style="position:absolute;top:10px;right:10px;background:var(--success-bg);color:var(--success);font-size:10px;padding:2px 8px;border-radius:10px;font-weight:bold;">Meister</div>' : ''}
+          <div style="font-size:2rem; margin-bottom:0.5rem">${t.icon}</div>
+          <h4 style="margin-bottom:0.25rem">${t.title}</h4>
+          <p style="font-size:0.8rem; margin:0; line-height:1.4">${t.desc}</p>
+          <div style="height:3px; background:var(--bg-base); border-radius:10px; margin-top:1rem">
+            <div style="height:100%; width:${p.score}%; background:var(--primary); border-radius:10px"></div>
+          </div>
+        </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderLearningArea() {
+  const main = document.getElementById('main-view');
+  const t = ISLP_DATA.topics.find(x => x.id === appState.currentTopicId);
+  const p = appState.progress[t.id];
+
+  let contentHtml = '';
+  if (appState.learningMode === 'theory') contentHtml = `<div class="glass-panel theory-content">${ISLP_DATA.theory[t.id]}</div>`;
+  else if (appState.learningMode === 'quiz') contentHtml = buildQuizHtml(t.id);
+  else if (appState.learningMode === 'flash') contentHtml = buildFlashcardsHtml(t.id);
+  else if (appState.learningMode === 'sandbox') contentHtml = buildSandboxHtml(t.id);
+
+  main.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem">
+      <div>
+        <div class="badge badge-purple" style="margin-bottom:0.5rem; display:inline-block">Kapitel ${t.id.replace('t','')}</div>
+        <h1 style="font-size:2.2rem">${t.icon} ${t.title}</h1>
+      </div>
+      <div style="text-align:right">
+        <div style="color:var(--text-muted); font-size:0.875rem">Mastery</div>
+        <div style="font-family:var(--font-mono); font-weight:700; font-size:1.5rem; color:${p.score >= 80 ? 'var(--success)' : 'var(--primary-light)'}">${p.score}%</div>
+      </div>
+    </div>
+
+    <div class="mode-tabs">
+      <button class="mode-tab ${appState.learningMode === 'theory' ? 'active' : ''}" onclick="app.setLearnMode('theory')">Buch-Summary</button>
+      <button class="mode-tab ${appState.learningMode === 'quiz' ? 'active' : ''}" onclick="app.setLearnMode('quiz')">Training (Quiz)</button>
+      <button class="mode-tab ${appState.learningMode === 'flash' ? 'active' : ''}" onclick="app.setLearnMode('flash')">Karteikarten</button>
+      <button class="mode-tab ${appState.learningMode === 'sandbox' ? 'active' : ''}" onclick="app.setLearnMode('sandbox')"><i class="ti ti-flask"></i> Interactive Sandbox</button>
+    </div>
+    
+    <div id="learning-content">${contentHtml}</div>
+  `;
+
+  if(appState.learningMode === 'quiz') loadNextQuestion();
+  if(appState.learningMode === 'flash') loadFlashcard();
+  if(appState.learningMode === 'sandbox') initSandbox(t.id);
+}
+
+// === QUIZ LOGIC ===
+let currentQ = null;
+let qAnswered = false;
+
+function buildQuizHtml() {
+  return `
+    <div class="glass-panel quiz-card">
+      <div id="q-diff" class="q-diff badge"></div>
+      <div class="q-text" id="q-text">Lade Frage...</div>
+      <div class="opts-grid" id="q-opts"></div>
+      <div class="explanation" id="q-exp"></div>
+    </div>
+    <div style="margin-top:1.5rem; display:flex; justify-content:flex-end">
+      <button class="btn btn-primary" id="q-next-btn" onclick="loadNextQuestion()" style="display:none">Nächste Frage <i class="ti ti-arrow-right"></i></button>
+    </div>
+  `;
+}
+
+function loadNextQuestion() {
+  const pool = ISLP_DATA.questions.filter(q => q.t === appState.currentTopicId);
+  if(!pool.length) {
+    document.getElementById('learning-content').innerHTML = `<div class="glass-panel" style="text-align:center; padding:4rem"><i class="ti ti-mood-smile" style="font-size:4rem; color:var(--text-dark); margin-bottom:1rem; display:block"></i><p>Für dieses spezifische Kapitel folgen in Kürze noch tiefergehende Fragen. Schaue ins Buch-Summary oder die Sandbox!</p></div>`;
+    return;
+  }
+  currentQ = pool[Math.floor(Math.random() * pool.length)];
+  qAnswered = false;
+  
+  document.getElementById('q-text').innerHTML = currentQ.q;
+  const dBadge = document.getElementById('q-diff');
+  dBadge.className = `q-diff badge ${currentQ.d===1?'badge-purple':currentQ.d===2?'':'text-amber'}`;
+  dBadge.innerText = currentQ.d===1?'Einfach':currentQ.d===2?'Mittel':'Schwer';
+  
+  const optsHtml = currentQ.o.map((opt, i) => `<button class="opt-btn" onclick="answerQuestion(${i})" id="opt-${i}">${opt}</button>`).join('');
+  document.getElementById('q-opts').innerHTML = optsHtml;
+  document.getElementById('q-exp').style.display = 'none';
+  document.getElementById('q-next-btn').style.display = 'none';
+}
+
+window.answerQuestion = function(idx) {
+  if(qAnswered) return;
+  qAnswered = true;
+  const isCorrect = (idx === currentQ.c);
+  
+  currentQ.o.forEach((_, i) => {
+    const btn = document.getElementById(`opt-${i}`);
+    btn.disabled = true;
+    if (i === currentQ.c) btn.classList.add(isCorrect || i !== idx ? 'correct' : 'show-correct');
+    else if (i === idx) btn.classList.add('wrong');
+  });
+
+  const exp = document.getElementById('q-exp');
+  exp.innerHTML = `<strong>💡 Erklärung:</strong> ${currentQ.e}`;
+  exp.style.display = 'block';
+  document.getElementById('q-next-btn').style.display = 'inline-flex';
+
+  if (isCorrect) {
+    addXP(20);
+    let p = appState.progress[appState.currentTopicId];
+    p.score = Math.min(100, p.score + 10);
+    saveState();
+  }
+};
+
+// === FLASHCARD LOGIC ===
+let currentFcIdx = 0;
+let fcList = [];
+
+function buildFlashcardsHtml(tid) {
+  fcList = ISLP_DATA.flashcards.filter(c => c.t === tid);
+  if(!fcList.length) return `<div class="glass-panel" style="text-align:center; padding:4rem"><p>Keine spezifischen Karteikarten für dieses Kapitel. Nutze die anderen Modi!</p></div>`;
+  
+  return `
+    <div style="text-align:center; margin-bottom:1rem; color:var(--text-dark); font-size:0.875rem" id="fc-counter"></div>
+    <div class="fc-container" onclick="document.getElementById('fc-inner').classList.toggle('flipped')">
+      <div class="fc-inner" id="fc-inner">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Konzept / Fachbegriff</div>
+          <div class="fc-content" id="fc-q"></div>
+          <div style="margin-top:1.5rem; font-size:0.75rem; color:var(--text-dark)"><i class="ti ti-hand-click"></i> Klicken zum Wenden</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label" style="color:var(--text-muted)">Definition</div>
+          <div class="fc-content" id="fc-a"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; justify-content:center; gap:1rem">
+      <button class="btn" onclick="fcNav(-1)"><i class="ti ti-arrow-left"></i> Zurück</button>
+      <button class="btn btn-primary" onclick="fcNav(1); addXP(2)">Gewusst <i class="ti ti-check"></i></button>
+    </div>
+  `;
+}
+
+window.fcNav = function(dir) {
+  if(!fcList.length) return;
+  document.getElementById('fc-inner').classList.remove('flipped');
+  setTimeout(() => {
+    currentFcIdx = (currentFcIdx + dir + fcList.length) % fcList.length;
+    loadFlashcard();
+  }, 150);
+}
+
+function loadFlashcard() {
+  if(!fcList.length) return;
+  document.getElementById('fc-counter').innerText = `Karte ${currentFcIdx + 1} von ${fcList.length}`;
+  document.getElementById('fc-q').innerHTML = fcList[currentFcIdx].q;
+  document.getElementById('fc-a').innerHTML = fcList[currentFcIdx].a;
+}
+
+// === INTERACTIVE SANDBOX LOGIC ===
+let currentChart = null;
+
+function buildSandboxHtml(tid) {
+  let html = `<div class="glass-panel" style="margin-bottom:1.5rem">`;
+  
+  if (tid === 't4') {
+    // Einfache lineare Regression - OLS Sandbox
+    html += `
+      <h3 style="margin-bottom:1rem; color:var(--info)">OLS Minimierung Live</h3>
+      <p>Finde manuell die Regressionsgerade, die den <strong>MSE</strong> (Mean Squared Error) minimiert.</p>
+      <div class="sandbox-controls">
+        <div class="control-group">
+          <div class="control-header"><span>Intercept &beta;<sub>0</sub></span> <span id="val-b0" class="text-info">0</span></div>
+          <input type="range" id="sl-b0" min="-10" max="10" step="0.5" value="-5" oninput="updateLR()">
+        </div>
+        <div class="control-group">
+          <div class="control-header"><span>Slope &beta;<sub>1</sub></span> <span id="val-b1" class="text-info">1</span></div>
+          <input type="range" id="sl-b1" min="-2" max="4" step="0.1" value="0.5" oninput="updateLR()">
+        </div>
+      </div>
+      <div class="metrics-row">
+        <div class="metric"><div class="stat-lbl">Dein MSE</div><div class="metric-val text-amber" id="val-mse">0.00</div></div>
+        <div class="metric"><div class="stat-lbl">Optimaler OLS MSE</div><div class="metric-val text-green">1.25</div></div>
+      </div>
+      <canvas id="viz-canvas" height="150" style="margin-top:1.5rem; background:rgba(0,0,0,0.3)"></canvas>
+    `;
+  } else if (tid === 't2' || tid === 't8') {
+    // Bias-Variance oder CV (U-Shape curve)
+    html += `
+      <h3 style="margin-bottom:1rem; color:var(--primary-light)">Bias-Varianz Tradeoff</h3>
+      <p>Beobachte, wie sich Trainings- und Testfehler verändern, wenn das Modell flexibler wird.</p>
+      <div class="sandbox-controls">
+        <div class="control-group">
+          <div class="control-header"><span>Modell-Komplexität (Flexibilität)</span> <span id="val-comp" class="text-info">5</span></div>
+          <input type="range" id="sl-comp" min="1" max="20" value="5" oninput="updateBV()">
+        </div>
+      </div>
+      <div class="metrics-row">
+        <div class="metric"><div class="stat-lbl">Bias²</div><div class="metric-val text-info" id="bv-bias">0</div></div>
+        <div class="metric"><div class="stat-lbl">Varianz</div><div class="metric-val text-amber" id="bv-var">0</div></div>
+        <div class="metric"><div class="stat-lbl">Test-MSE</div><div class="metric-val text-danger" id="bv-mse">0</div></div>
+      </div>
+      <canvas id="viz-canvas" height="150" style="margin-top:1.5rem; background:rgba(0,0,0,0.3)"></canvas>
+    `;
+  } else if (tid === 't11') {
+    // Lasso Shrinkage
+    html += `
+      <h3 style="margin-bottom:1rem; color:var(--success)">Lasso Regression Shrinkage</h3>
+      <p>Erhöhe den Strafterm &lambda;. Beobachte, wie unwichtige Koeffizienten <strong>exakt auf Null</strong> gezwungen werden (Feature Selection).</p>
+      <div class="sandbox-controls">
+        <div class="control-group">
+          <div class="control-header"><span>Strafterm &lambda;</span> <span id="val-lam" class="text-info">0</span></div>
+          <input type="range" id="sl-lam" min="0" max="10" step="0.1" value="0" oninput="updateLasso()">
+        </div>
+      </div>
+      <canvas id="viz-canvas" height="150" style="margin-top:1.5rem; background:rgba(0,0,0,0.3)"></canvas>
+    `;
+  } else if (tid === 't3') {
+     html += `
+      <h3 style="margin-bottom:1rem; color:var(--info)">Logistische Regression (Sigmoid)</h3>
+      <p>Modelliert <span class="math">p(X) = e<sup>z</sup> / (1+e<sup>z</sup>)</span>. Verändere die Steigung (Log-Odds) und beobachte den S-Kurven-Effekt.</p>
+      <div class="sandbox-controls">
+        <div class="control-group">
+          <div class="control-header"><span>Steigung &beta;<sub>1</sub></span> <span id="val-b1" class="text-info">1.0</span></div>
+          <input type="range" id="sl-b1" min="-5" max="5" step="0.2" value="1" oninput="updateSigmoid()">
+        </div>
+      </div>
+      <canvas id="viz-canvas" height="150" style="margin-top:1.5rem; background:rgba(0,0,0,0.3)"></canvas>
+     `;
+  } else {
+    html += `<div style="text-align:center; padding:3rem"><i class="ti ti-device-gamepad-2" style="font-size:3rem; color:var(--text-dark)"></i><p style="margin-top:1rem">Sandbox-Labor für dieses Thema in Entwicklung. Versuche Kapitel 2, 3, 4, 8 oder 11 für interaktive Demos.</p></div>`;
+  }
+  
+  html += `</div>`;
+  return html;
+}
+
+function initSandbox(tid) {
+  if(currentChart) { currentChart.destroy(); currentChart = null; }
+  setTimeout(() => {
+    const ctx = document.getElementById('viz-canvas');
+    if(!ctx) return;
+    
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = "'JetBrains Mono', monospace";
+    
+    if(tid === 't4') initLR(ctx);
+    else if(tid === 't2' || tid === 't8') initBV(ctx);
+    else if(tid === 't11') initLasso(ctx);
+    else if(tid === 't3') initSigmoid(ctx);
+  }, 100);
+}
+
+// Sandbox 1: Linear Regression OLS
+let lrData = [ {x: 1, y: 3}, {x: 2, y: 5}, {x: 3, y: 4}, {x: 4, y: 7}, {x: 5, y: 6}, {x: 6, y: 9}, {x: 7, y: 8}, {x: 8, y: 10} ];
+window.updateLR = function() {
+  const b0 = parseFloat(document.getElementById('sl-b0').value);
+  const b1 = parseFloat(document.getElementById('sl-b1').value);
+  document.getElementById('val-b0').innerText = b0.toFixed(1);
+  document.getElementById('val-b1').innerText = b1.toFixed(1);
+  
+  let mse = 0;
+  const lineData = lrData.map(pt => {
+    const yHat = b0 + b1 * pt.x;
+    mse += Math.pow(pt.y - yHat, 2);
+    return {x: pt.x, y: yHat};
+  });
+  mse = mse / lrData.length;
+  
+  const el = document.getElementById('val-mse');
+  el.innerText = mse.toFixed(2);
+  el.className = `metric-val ${mse < 1.3 ? 'text-green' : mse < 3 ? 'text-amber' : 'text-danger'}`;
+  
+  if(currentChart) {
+    currentChart.data.datasets[1].data = lineData;
+    currentChart.update('none');
+  }
+};
+
+function initLR(ctx) {
+  currentChart = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [{ label: 'Datenpunkte', data: lrData, backgroundColor: '#0ea5e9', pointRadius: 6 },
+                 { label: 'Dein Modell Ŷ', data: [], type: 'line', borderColor: '#ef4444', borderWidth: 2, fill: false, pointRadius: 0 }]
+    },
+    options: { responsive: true, scales: { x: { min: 0, max: 9, grid: {color: 'rgba(255,255,255,0.05)'} }, y: { min: 0, max: 12, grid: {color: 'rgba(255,255,255,0.05)'} } }, animation: false }
+  });
+  updateLR();
+}
+
+// Sandbox 2: Bias-Variance
+window.updateBV = function() {
+  const c = parseInt(document.getElementById('sl-comp').value);
+  document.getElementById('val-comp').innerText = c;
+  
+  const bias2 = Math.max(0.1, 8 - 1.2*c + 0.05*c*c);
+  const variance = 0.5 + 0.02*c + 0.08*c*c;
+  const mse = bias2 + variance + 1.0; // 1.0 is irreducible
+  
+  document.getElementById('bv-bias').innerText = bias2.toFixed(1);
+  document.getElementById('bv-var').innerText = variance.toFixed(1);
+  document.getElementById('bv-mse').innerText = mse.toFixed(1);
+  
+  if(currentChart) {
+    currentChart.data.datasets.forEach(ds => {
+      ds.pointRadius = ds.data.map((_, i) => i === c-1 ? 6 : 0);
+      ds.pointBackgroundColor = '#fff';
+    });
+    currentChart.update('none');
+  }
+};
+
+function initBV(ctx) {
+  const labels = Array.from({length:20}, (_,i)=> i+1);
+  const b2 = labels.map(c => Math.max(0.1, 8 - 1.2*c + 0.05*c*c));
+  const v = labels.map(c => 0.5 + 0.02*c + 0.08*c*c);
+  const m = labels.map((_,i) => b2[i] + v[i] + 1.0);
+  
+  currentChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Bias²', data: b2, borderColor: '#0ea5e9', tension: 0.4, borderWidth:2 },
+        { label: 'Varianz', data: v, borderColor: '#f59e0b', tension: 0.4, borderWidth:2 },
+        { label: 'Test-MSE', data: m, borderColor: '#ef4444', tension: 0.4, borderWidth:3, borderDash: [5,5] }
+      ]
+    },
+    options: { responsive: true, scales: { x: { title:{display:true, text:'Flexibilität'}, grid: {color: 'rgba(255,255,255,0.05)'} }, y: { grid: {color: 'rgba(255,255,255,0.05)'} } }, animation: false }
+  });
+  updateBV();
+}
+
+// Sandbox 3: Lasso
+window.updateLasso = function() {
+  const lam = parseFloat(document.getElementById('sl-lam').value);
+  document.getElementById('val-lam').innerText = lam.toFixed(1);
+  if(currentChart) {
+    currentChart.options.plugins.annotation = { annotations: { line1: { type: 'line', xMin: lam, xMax: lam, borderColor: 'white', borderWidth: 2 }} };
+    currentChart.update('none');
+  }
+};
+
+function initLasso(ctx) {
+  const lams = Array.from({length:101}, (_,i)=> i*0.1);
+  // Simulate soft-thresholding
+  const b1 = lams.map(l => Math.max(0, 5 - l)); // Wichtig
+  const b2 = lams.map(l => Math.max(0, 3 - l*1.5)); // Mittel
+  const b3 = lams.map(l => Math.max(0, -2 + l*0.8) * -1); // Klein, negativ
+  
+  currentChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: lams.map(l=>l.toFixed(1)),
+      datasets: [
+        { label: 'β_Wichtig', data: b1, borderColor: '#10b981', tension: 0, pointRadius: 0 },
+        { label: 'β_Mittel', data: b2, borderColor: '#0ea5e9', tension: 0, pointRadius: 0 },
+        { label: 'β_Klein', data: b3, borderColor: '#f59e0b', tension: 0, pointRadius: 0 }
+      ]
+    },
+    options: { responsive: true, scales: { x: { title:{display:true,text:'Lambda λ'}, ticks:{maxTicksLimit:10}, grid:{color:'rgba(255,255,255,0.05)'}}, y: { title:{display:true,text:'Koeffizientenwert'}, grid:{color:'rgba(255,255,255,0.05)'}}}, animation: false }
+  });
+  updateLasso();
+}
+
+// Sandbox 4: Sigmoid
+window.updateSigmoid = function() {
+  const b1 = parseFloat(document.getElementById('sl-b1').value);
+  document.getElementById('val-b1').innerText = b1.toFixed(1);
+  
+  const xs = Array.from({length:81}, (_,i)=> -4 + i*0.1);
+  const ys = xs.map(x => 1 / (1 + Math.exp(-(b1 * x))));
+  
+  if(currentChart) {
+    currentChart.data.datasets[0].data = ys;
+    currentChart.update('none');
+  }
+};
+
+function initSigmoid(ctx) {
+  const xs = Array.from({length:81}, (_,i)=> -4 + i*0.1);
+  currentChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: xs.map(x=>x.toFixed(1)),
+      datasets: [{ label: 'p(X) = Wahrscheinlichkeit', data: [], borderColor: '#6366f1', borderWidth:3, tension: 0.2, pointRadius: 0, fill: {target: 'origin', above: 'rgba(99,102,241,0.1)'} }]
+    },
+    options: { responsive: true, scales: { x: { title:{display:true,text:'X'}, ticks:{maxTicksLimit:9}, grid:{color:'rgba(255,255,255,0.05)'}}, y: { min:0, max:1, grid:{color:'rgba(255,255,255,0.05)'}}}, animation: false }
+  });
+  updateSigmoid();
+}
+
+// === EXAM SIMULATION ===
+let examActive = false;
+let examQ = [];
+let examIdx = 0;
+let examScore = 0;
+
+function renderExam() {
+  const main = document.getElementById('main-view');
+  if(!examActive) {
+    main.innerHTML = `
+      <div class="glass-panel exam-summary">
+        <h1 style="margin-bottom:1rem; color:var(--danger)">Offline Prüfungssimulation</h1>
+        <p style="margin-bottom:2rem; font-size:1.1rem">Teste dein Wissen über alle ISLP-Kapitel hinweg. Ein Fehler zählt knallhart. Bereit?</p>
+        <button class="btn btn-primary" style="font-size:1.2rem; padding: 1rem 3rem" onclick="startExam()"><i class="ti ti-player-play"></i> Simulation starten</button>
+      </div>
+    `;
+    return;
+  }
+  
+  if(examIdx >= examQ.length) {
+    const pct = Math.round((examScore / examQ.length) * 100);
+    main.innerHTML = `
+      <div class="glass-panel exam-summary">
+        <div class="circle-score" style="color: ${pct > 75 ? 'var(--success)' : pct > 50 ? 'var(--warning)' : 'var(--danger)'}; border-color: currentColor">${pct}%</div>
+        <h2>Simulation Abgeschlossen</h2>
+        <p style="margin: 1rem 0 2rem">${examScore} von ${examQ.length} Fragen absolut korrekt beantwortet.</p>
+        <button class="btn btn-primary" onclick="examActive=false; renderExam()"><i class="ti ti-refresh"></i> Neuer Versuch</button>
+      </div>
+    `;
+    addXP(pct);
+    return;
+  }
+  
+  const q = examQ[examIdx];
+  main.innerHTML = `
+    <div style="display:flex; justify-content:space-between; margin-bottom:1rem">
+      <div class="badge badge-purple">Frage ${examIdx+1} / ${examQ.length}</div>
+    </div>
+    <div class="prog-bar" style="margin-bottom:2rem"><div class="prog-fill" style="width:${(examIdx/examQ.length)*100}%"></div></div>
+    <div class="glass-panel quiz-card">
+      <div class="q-text">${q.q}</div>
+      <div class="opts-grid">
+        ${q.o.map((opt, i) => `<button class="opt-btn" onclick="submitExam(${i})">${opt}</button>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+window.startExam = function() {
+  examQ = [...ISLP_DATA.questions].sort(() => Math.random() - 0.5).slice(0, 10);
+  examIdx = 0; examScore = 0; examActive = true;
+  renderExam();
+}
+
+window.submitExam = function(idx) {
+  if (idx === examQ[examIdx].c) examScore++;
+  examIdx++;
+  renderExam();
+}
+
+// Start
+app.init();
+</script>
+</body>
+</html>
